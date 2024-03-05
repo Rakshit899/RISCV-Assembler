@@ -8,6 +8,15 @@ string opcode(string a){
     else if(a=="S"){
         return "0100011";
     }
+    else if(a=="addi" || a=="andi" || a=="ori"){
+            return "0010011";
+    }
+    else if(a=="lb" || a=="ld" || a=="lw" || a=="lh"){
+            return "0000011";
+    }
+    else if(a=="jalr"){
+            return "1100111";
+    }
     return "";
 }
 string func3(string a){
@@ -38,7 +47,25 @@ string func3(string a){
     else if(a=="sd"){
         return "011";
     }
-
+    else if(a=="lb" || a=="jalr" || a=="addi"){
+        return "000";
+    }
+    else if(a=="lh"){
+        return "001";
+    }
+    else if(a=="lw"){
+        return "010";
+    }
+    else if(a=="ld"){
+        return "011";
+    }
+    else if(a=="ori"){
+        return "110";
+    }
+    else if(a=="andi"){
+        return "111";
+    }
+    return "";
 }
 string func7(string a){
     if(a=="add" || a=="sll" || a=="slt" || a=="xor" || a=="srl" || a=="or" || a=="and"){
@@ -53,26 +80,37 @@ string func7(string a){
     return "";
 }
 string register_num(string a){
-    // Chances of mistake
-    a=a.substr(1);
-    int decimalNumber=atoi(a.c_str());
-    stringstream ss;
-    ss << hex << decimalNumber;
-    string ans=ss.str();
-    while(ans.size()<5){
-        ans="0"+ans;
+    string reg_string;
+    for(int i=1;i<a.size();i++){
+        reg_string+= a[i];
     }
-    return ans;
+    int reg_no= stoi(reg_string);
+    if(reg_no>=0 && reg_no<32){
+        string ans;
+        for(int i=0;i<5;i++){
+            ans+= ('0'+reg_no%2);
+            reg_no/=2;
+        }
+        reverse(ans.begin(),ans.end());
+        return ans;
+    }
+    return "error";
 }
 string immediate(string a){
-    int decimalNumber=atoi(a.c_str());
-    stringstream ss;
-    ss << hex << decimalNumber;
-    string ans=ss.str();
-    while(ans.size()<12){
-        ans="0"+ans;
+    int imm= stoi(a);
+    if(imm<0){
+        imm = 4096 +imm;
     }
-    return ans;
+    if(imm>=0 && imm<4096){
+        string ans;
+        for(int i=0;i<12;i++){
+            ans+=('0' + imm%2);
+            imm/=2;
+        }
+        reverse(ans.begin(),ans.end());
+        return ans;
+    }
+    return "error";
 }
 string R_format(string operation,string rd,string rs1,string rs2){
     // Can't find mul, div
@@ -105,6 +143,17 @@ string S_format(string operation,string rs2,string rs1,string imm){
     ans+=opcode("S");
     return ans;
 }
+
+string I_format(string operation,string rd,string rs1, string imme){
+    string ans="0x";
+    ans+=immediate(imme);
+    ans+=register_num(rs1);
+    ans+=funct3(operation);
+    ans+=register_num(rd);
+    ans+=opcode(operation);
+    return ans;
+}
+
 int main(){
     
     return 0;
