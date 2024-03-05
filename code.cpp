@@ -11,7 +11,7 @@ string func3(string a){
     if(a=="add" || a=="sub" || a=="mul"){
         return "000";
     }
-    else if(a=="xor"){
+    else if(a=="xor" || a=="div"){
         return "100";
     }
     else if(a=="srl"){
@@ -48,6 +48,7 @@ string func7(string a){
 }
 string register_num(string a){
     // Chances of mistake
+    a=a.substr(1);
     int decimalNumber=atoi(a.c_str());
     stringstream ss;
     ss << hex << decimalNumber;
@@ -61,8 +62,8 @@ string R_format(string a,string operation,string rd,string rs1,string rs2){
     // Can't find mul, div
     // mul,div,add,rem-> same opcode,func7 mul,div-> different func3
     // add-> 0x003100B3
-    // mul-> 0x023100B3
-    // div-> 0x023140B3
+    // mul-> 0x023100B3 -> func3=000
+    // div-> 0x023140B3 -> func3=100
     // rem-> 0x023160B3
     string ans="0x";
     ans+=func7(operation);
