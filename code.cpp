@@ -17,6 +17,12 @@ string opcode(string a){
     else if(a=="jalr"){
             return "1100111";
     }
+    else if(a=="auipc"){
+        return "0010111";
+    }
+    else if(a=="lui"){
+        return "0110111";
+    }
     return "";
 }
 string func3(string a){
@@ -94,7 +100,7 @@ string register_num(string a){
         reverse(ans.begin(),ans.end());
         return ans;
     }
-    return "error";
+    return "";
 }
 string immediate(string a){
     int imm= stoi(a);
@@ -110,8 +116,31 @@ string immediate(string a){
         reverse(ans.begin(),ans.end());
         return ans;
     }
-    return "error";
+    return "";
 }
+
+string immediate_U(string a){
+    int imm= stoi(a);
+    if(imm>=0 && imm<1048576){
+        string ans;
+        for(int i=0;i<20;i++){
+            ans+=('0' + imm%2);
+            imm/=2;
+        }
+        reverse(ans.begin(),ans.end());
+        return ans;
+    }
+    return "";
+}
+
+string U_format(string a,string operation,string rd,string imme){
+    string ans="0x";
+    ans+=immediate(imme);
+    ans+=register_num(rd);
+    ans+=opcode(operation);
+    return ans;
+}
+
 string R_format(string operation,string rd,string rs1,string rs2){
     // Can't find mul, div
     // mul,div,add,rem-> same opcode,func7 mul,div-> different func3
