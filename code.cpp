@@ -5,10 +5,13 @@ string opcode(string a){
     if(a=="R"){
         return "0110011";
     }
+    else if(a=="S"){
+        return "0100011";
+    }
     return "";
 }
 string func3(string a){
-    if(a=="add" || a=="sub" || a=="mul"){
+    if(a=="add" || a=="sub" || a=="mul" || a=="sb"){
         return "000";
     }
     else if(a=="xor" || a=="div"){
@@ -20,10 +23,10 @@ string func3(string a){
     else if(a=="sra"){
         return "101";
     }
-    else if(a=="sll"){
+    else if(a=="sll" || a=="sh"){
         return "001";
     }
-    else if(a=="slt"){
+    else if(a=="slt" || a=="sw"){
         return "010";
     }
     else if(a=="or"){
@@ -31,6 +34,9 @@ string func3(string a){
     }
     else if(a=="and"){
         return "111";
+    }
+    else if(a=="sd"){
+        return "011";
     }
 
 }
@@ -58,7 +64,17 @@ string register_num(string a){
     }
     return ans;
 }
-string R_format(string a,string operation,string rd,string rs1,string rs2){
+string immediate(string a){
+    int decimalNumber=atoi(a.c_str());
+    stringstream ss;
+    ss << hex << decimalNumber;
+    string ans=ss.str();
+    while(ans.size()<12){
+        ans="0"+ans;
+    }
+    return ans;
+}
+string R_format(string operation,string rd,string rs1,string rs2){
     // Can't find mul, div
     // mul,div,add,rem-> same opcode,func7 mul,div-> different func3
     // add-> 0x003100B3
@@ -72,6 +88,21 @@ string R_format(string a,string operation,string rd,string rs1,string rs2){
     ans+=func3(operation);
     ans+=register_num(rd);
     ans+=opcode("R");
+    return ans;
+}
+string S_format(string operation,string rs2,string rs1,string imm){
+    // I have considered sd as S format -> DOUBTFULL
+    string ans="0x";
+    imm=immediate(imm);
+    string imm1=imm.substr(5),imm2=imm.substr(0,5);
+    reverse(imm1.begin(),imm1.end());
+    reverse(imm2.begin(),imm2.end());
+    ans+=imm1;
+    ans+=register_num(rs2);
+    ans+=register_num(rs1);
+    ans+=func3(operation);
+    ans+=imm2;
+    ans+=opcode("S");
     return ans;
 }
 int main(){
