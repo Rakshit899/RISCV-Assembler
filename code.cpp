@@ -29,7 +29,7 @@ string func3(string a){
     else if(a=="slt" || a=="sw"){
         return "010";
     }
-    else if(a=="or"){
+    else if(a=="or" || a=="rem"){
         return "110";
     }
     else if(a=="and"){
@@ -80,7 +80,7 @@ string R_format(string operation,string rd,string rs1,string rs2){
     // add-> 0x003100B3
     // mul-> 0x023100B3 -> func3=000
     // div-> 0x023140B3 -> func3=100
-    // rem-> 0x023160B3
+    // rem-> 0x023160B3 -> func3=110
     string ans="0x";
     ans+=func7(operation);
     ans+=register_num(rs2);
