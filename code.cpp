@@ -174,10 +174,37 @@ string S_format(string operation,string rs2,string rs1,string imm){
 }
 
 string I_format(string operation,string rd,string rs1, string imme){
-    string ans="0x";
-    ans+=immediate(imme);
+    string ans="0x";    
+    ans=immediate(imme);
     ans+=register_num(rs1);
     ans+=funct3(operation);
+    ans+=register_num(rd);
+    ans+=opcode(operation);
+    return ans;
+}
+
+string SB_format(string operation,string rd,string rs1, string rs2, string imm){
+    string ans="0x";
+    imm=immediate(imm);
+    ans+=imm[0];            //12
+    ans+=imm.substr(2,6);   //10:5
+    ans+=register_num(rs2);
+    ans+=register_num(rs1);
+    ans+=funct3(operation);
+    ans+=imm.substr(8,4);   //4:1
+    ans+=imm[1];            //11
+    ans+=opcode(operation);
+    return ans;
+}
+
+string UJ_format(string operation,string rd,string rs1, string imme){
+    string ans="0x";
+    imm=immediate(imm);
+    imm=immediate(imm);
+    ans+=imm[0];            //20
+    ans+=imm.substr(10,10); //10:5
+    ans+=imm[9];            //11
+    ans+=imm.substr(1,8);   //19:12
     ans+=register_num(rd);
     ans+=opcode(operation);
     return ans;
