@@ -2,7 +2,14 @@
 using namespace std;
 bool error=false;
 unordered_map<string,string>  mp={{"sp","x2"},{"gp","x3"},{"tp","x4"},{"ra","x1"}};
-
+string convert_to_hex(string a){
+    bitset<32> b(a);
+    unsigned long int x=b.to_ulong();
+    stringstream ss;
+    ss << hex << x;
+    string hexString = ss.str();
+    return hexString;
+}
 string opcode(string a){
     if(a=="R"){
         return "0110011";
@@ -25,6 +32,7 @@ string opcode(string a){
     else if(a=="lui"){
         return "0110111";
     }
+    error=true;
     return "";
 }
 string func3(string a){
@@ -73,6 +81,7 @@ string func3(string a){
     else if(a=="andi"){
         return "111";
     }
+    error=true;
     return "";
 }
 string func7(string a){
@@ -85,6 +94,7 @@ string func7(string a){
     else if(a=="sub" || a=="sra"){
         return "0100000";
     }
+    error=true;
     return "";
 }
 string register_num(string a){
@@ -102,6 +112,7 @@ string register_num(string a){
         reverse(ans.begin(),ans.end());
         return ans;
     }
+    error=true;
     return "";
 }
 string immediate(string a){
@@ -118,6 +129,7 @@ string immediate(string a){
         reverse(ans.begin(),ans.end());
         return ans;
     }
+    error=true;
     return "";
 }
 
@@ -132,14 +144,20 @@ string immediate_U(string a){
         reverse(ans.begin(),ans.end());
         return ans;
     }
+    error=true;
     return "";
 }
 
 string U_format(string operation,string rd,string imm){
-    string ans="0x";
+    string ans="";
     ans+=immediate(imm);
     ans+=register_num(rd);
     ans+=opcode(operation);
+    if(error){
+        return "";
+    }
+    ans=convert_to_hex(ans);
+    ans="0x"+ans;
     return ans;
 }
 
@@ -150,18 +168,23 @@ string R_format(string operation,string rd,string rs1,string rs2){
     // mul-> 0x023100B3 -> func3=000
     // div-> 0x023140B3 -> func3=100
     // rem-> 0x023160B3 -> func3=110
-    string ans="0x";
+    string ans="";
     ans+=func7(operation);
     ans+=register_num(rs2);
     ans+=register_num(rs1);
     ans+=func3(operation);
     ans+=register_num(rd);
     ans+=opcode("R");
+    if(error){
+        return "";
+    }
+    ans=convert_to_hex(ans);
+    ans="0x"+ans;
     return ans;
 }
 string S_format(string operation,string rs2,string rs1,string imm){
     // I have considered sd as S format -> DOUBTFULL
-    string ans="0x";
+    string ans="";
     imm=immediate(imm);
     string imm1=imm.substr(5),imm2=imm.substr(0,5);
     reverse(imm1.begin(),imm1.end());
@@ -172,21 +195,31 @@ string S_format(string operation,string rs2,string rs1,string imm){
     ans+=func3(operation);
     ans+=imm2;
     ans+=opcode("S");
+    if(error){
+        return "";
+    }
+    ans=convert_to_hex(ans);
+    ans="0x"+ans;
     return ans;
 }
 
 string I_format(string operation,string rd,string rs1, string imm){
-    string ans="0x";    
+    string ans="";    
     ans=immediate(imm);
     ans+=register_num(rs1);
     ans+=func3(operation);
     ans+=register_num(rd);
     ans+=opcode(operation);
+    if(error){
+        return "";
+    }
+    ans=convert_to_hex(ans);
+    ans="0x"+ans;
     return ans;
 }
 
 string SB_format(string operation,string rs1, string rs2, string imm){
-    string ans="0x";
+    string ans="";
     imm=immediate(imm);
     ans+=imm[0];            //12
     ans+=imm.substr(2,6);   //10:5
@@ -196,11 +229,16 @@ string SB_format(string operation,string rs1, string rs2, string imm){
     ans+=imm.substr(8,4);   //4:1
     ans+=imm[1];            //11
     ans+=opcode(operation);
+    if(error){
+        return "";
+    }
+    ans=convert_to_hex(ans);
+    ans="0x"+ans;
     return ans;
 }
 
 string UJ_format(string operation,string rd,string imm){
-    string ans="0x";
+    string ans="";
     imm=immediate(imm);
     ans+=imm[0];            //20
     ans+=imm.substr(10,10); //10:5
@@ -208,6 +246,11 @@ string UJ_format(string operation,string rd,string imm){
     ans+=imm.substr(1,8);   //19:12
     ans+=register_num(rd);
     ans+=opcode(operation);
+    if(error){
+        return "";
+    }
+    ans=convert_to_hex(ans);
+    ans="0x"+ans;
     return ans;
 }
 
@@ -273,6 +316,10 @@ int main(){
             ans = U_format(operation, rd, imm);
         }
 
+        if(error){
+            cout<<"Error Occured!"<<endl;
+            break;
+        }
         ofile << ans << "\n";
     }
 
