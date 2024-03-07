@@ -197,9 +197,8 @@ string SB_format(string operation,string rd,string rs1, string rs2, string imm){
     return ans;
 }
 
-string UJ_format(string operation,string rd,string rs1, string imme){
+string UJ_format(string operation,string rd,string rs1, string imm){
     string ans="0x";
-    imm=immediate(imm);
     imm=immediate(imm);
     ans+=imm[0];            //20
     ans+=imm.substr(10,10); //10:5
