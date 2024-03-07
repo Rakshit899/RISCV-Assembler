@@ -1,6 +1,7 @@
 #include<bits/stdc++.h>
 using namespace std;
 bool error=false;
+int pc = 0;
 unordered_map<string,string>  mp={{"sp","x2"},{"gp","x3"},{"tp","x4"},{"ra","x1"}};
 string convert_to_hex(string a){
     bitset<32> b(a);
