@@ -13,28 +13,35 @@ string convert_to_hex(string a){
 string opcode(string a){
     if(a=="R"){
         return "0110011";
-    }
+    } 
     else if(a=="S"){
         return "0100011";
-    }
+    } 
     else if(a=="addi" || a=="andi" || a=="ori"){
-            return "0010011";
-    }
+        return "0010011";
+    } 
     else if(a=="lb" || a=="ld" || a=="lw" || a=="lh"){
-            return "0000011";
-    }
+        return "0000011";
+    } 
     else if(a=="jalr"){
-            return "1100111";
-    }
+        return "1100111";
+    } 
     else if(a=="auipc"){
         return "0010111";
-    }
+    } 
     else if(a=="lui"){
         return "0110111";
+    } 
+    else if(a=="beq" || a=="bne" || a=="bge" || a=="blt"){
+        return "1100011";
+    } 
+    else if(a=="jal"){
+        return "1101111";
     }
     error=true;
     return "";
 }
+
 string func3(string a){
     if(a=="add" || a=="sub" || a=="mul" || a=="sb"){
         return "000";
@@ -80,6 +87,18 @@ string func3(string a){
     }
     else if(a=="andi"){
         return "111";
+    }
+    else if(a=="beq"){
+        return "000";
+    }
+    else if(a=="bne"){
+        return "001";
+    }
+    else if(a=="blt"){
+        return "100";
+    }
+    else if(a=="bge"){
+        return "101";
     }
     error=true;
     return "";
@@ -274,8 +293,8 @@ int main(){
                 if(line[i]==' ' || line[i]==',' || line[i]=='\t' || line[i] == '\n' || line[i]==':' || line[i]==EOF){
                     if(seg!=""){
                         lineVec.push_back(seg);
+                        seg="";
                     }
-                    seg="";
                     continue;
                 }
                 seg+=line[i];
@@ -357,66 +376,58 @@ int main(){
                     j++;
                 }
             }
-        }
-    }
-        vector<string> lineVec;
 
-        string seg = "";
-        for(int i=0;i<line.size();i++){
-            if(line[i]==' ' || line[i]==',' || line[i]=='\t' || line[i] == '\n' || line[i] == '(' || line[i] == ')' || line[i]==EOF){
-                if(seg == "") continue;
-                lineVec.push_back(seg);
-                seg="";
-                continue;
+            string operation = lineVec[0]; 
+            string rd = "";
+            string rs1 = "";
+            string rs2 = "";
+            string imm = "";
+    
+            string ans = "";
+    
+            if(operation=="add" || operation=="sub" || operation=="xor" || operation=="mul" || operation=="div" || operation=="rem" || operation=="srl" || operation=="sll" || operation=="slt" || operation=="or" || operation=="and" || operation=="sra"){
+                rd = lineVec[1];
+                rs1 = lineVec[2];
+                rs2 = lineVec[3];
+                ans = R_format(operation, rd, rs1, rs2);
+            } else if(operation=="addi" || operation=="andi" || operation=="ori" || operation=="lb" ||  operation=="ld" ||  operation=="lh" ||  operation=="lw" ||  operation=="jalr"){
+                rd = lineVec[1];
+                rs1 = lineVec[2];
+                rs2 = lineVec[3];
+                ans = I_format(operation, rd, rs1, imm);
+            } else if(operation=="sb" || operation=="sw" || operation=="sd" || operation=="sh"){
+                rs2 = lineVec[1];
+                imm = lineVec[2];
+                rs1 = lineVec[3];
+                ans = S_format(operation, rs2, rs1, imm);
+            } else if(operation=="beq" || operation=="bne" || operation=="bge" || operation=="blt"){
+                rs1 = lineVec[1];
+                rs2 = lineVec[2];
+                imm = lineVec[3];
+                ans = SB_format(operation, rs2, rs1, imm);
+            } else if(operation=="jal"){
+                rd = lineVec[1];
+                imm = lineVec[2];
+                ans = UJ_format(operation, rd, imm);
+            } else if(operation=="auipc" || operation=="lui"){
+                rd = lineVec[1];
+                imm = lineVec[2];
+                ans = U_format(operation, rd, imm);
             }
-            seg+=line[i];
+
+            if(error){
+                cout<<"Error Occured!"<<endl;
+                break;
+            }
+    
+            ofile << pc << "\n";
+            ofile << ans << "\n";
+    
+            if(line.size())pc += 4;
+
+            
         }
-
-        string operation = lineVec[0]; 
-        string rd;
-        string rs1;
-        string rs2;
-        string imm;
-
-        string ans;
-
-        if(operation=="add" || operation=="sub" || operation=="xor" || operation=="mul" || operation=="div" || operation=="rem" || operation=="srl" || operation=="sll" || operation=="slt" || operation=="or" || operation=="and" || operation=="sra"){
-            rd = lineVec[1];
-            rs1 = lineVec[2];
-            rs2 = lineVec[3];
-            ans = R_format(operation, rd, rs1, rs2);
-        } else if(operation=="addi" || operation=="andi" || operation=="ori" || operation=="lb" ||  operation=="ld" ||  operation=="lh" ||  operation=="lw" ||  operation=="jalr"){
-            rd = lineVec[1];
-            rs1 = lineVec[2];
-            rs2 = lineVec[3];
-            ans = I_format(operation, rd, rs1, imm);
-        } else if(operation=="sb" || operation=="sw" || operation=="sd" || operation=="sh"){
-            rs2 = lineVec[1];
-            imm = lineVec[2];
-            rs1 = lineVec[3];
-            ans = S_format(operation, rs2, rs1, imm);
-        } else if(operation=="beq" || operation=="bne" || operation=="bge" || operation=="blt"){
-            rs1 = lineVec[1];
-            rs2 = lineVec[2];
-            imm = lineVec[3];
-            ans = SB_format(operation, rs2, rs1, imm);
-        } else if(operation=="jal"){
-            rd = lineVec[1];
-            imm = lineVec[2];
-            ans = UJ_format(operation, rd, imm);
-        } else if(operation=="auipc" || operation=="lui"){
-            rd = lineVec[1];
-            imm = lineVec[2];
-            ans = U_format(operation, rd, imm);
-        }
-
-        if(error){
-            cout<<"Error Occured!"<<endl;
-            break;
-        }
-        ofile << ans << "\n";
     }
-
     ifile.close();
     ofile.close();
 
