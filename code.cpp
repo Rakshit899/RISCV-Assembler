@@ -260,11 +260,105 @@ int main(){
 
     ifstream ifile(ifilename);
     ofstream ofile(ofilename);
-
-    
+    map<string, int> label;
+    int memory_counter=0;
+    vector<string>memory;
     string line;
     while (getline(ifile, line)) {
-
+        if(line==".data"){
+        while (getline(ifile, line)) {
+            if(line==".text")break;
+            vector<string> lineVec;
+            string seg = "";
+            for(int i=0;i<line.size();i++){
+                if(line[i]==' ' || line[i]==',' || line[i]=='\t' || line[i] == '\n' || line[i]==':' || line[i]==EOF){
+                    if(seg!=""){
+                        lineVec.push_back(seg);
+                    }
+                    seg="";
+                    continue;
+                }
+                seg+=line[i];
+            }
+            label[lineVec[0]]=memory_counter;
+            if(lineVec[1]==".word"){
+                int j=2;
+                while(j<lineVec.size()){
+                    int decimal;
+                    string temp= lineVec[j];
+                    if(lineVec[j][0]=='0' && lineVec[j][1]=='x'){
+                         decimal = stoi(lineVec[j].substr(2),0,16);
+                    }
+                    else{
+                        decimal= stoi(lineVec[j]);
+                    }
+                    stringstream ss;
+                    for(int i=0;i<4;i++){
+                        string hexString="";
+                        if((decimal%256)==0){
+                            hexString+= "00";
+                        }
+                        else if((decimal %256) <16){
+                            hexString+= "0";
+                        }
+                        ss << hex << decimal%256;
+                        hexString += ss.str();
+                        memory.push_back(hexString);
+                        memory_counter++;
+                        decimal/=256;
+                    }
+                    j++;
+                }
+            }
+            else if(lineVec[1]==".byte"){
+                int j=2;
+                while(j<lineVec.size()){
+                    int decimal;
+                    string temp = lineVec[j];
+                    if(lineVec[j][0]=='0' && lineVec[j][1]=='x'){
+                         decimal = stoi(lineVec[j].substr(2),0,16);
+                    }
+                    else if(lineVec[j][0]=='\''){
+                        decimal = (int)lineVec[j][1];
+                    }
+                    else{
+                        decimal= stoi(lineVec[j]);
+                    }
+                    stringstream ss;
+                    string hexString="";
+                    if((decimal) <16){
+                        hexString+= "0";
+                    }
+                    ss << hex << decimal;
+                    hexString += ss.str();
+                    memory.push_back(hexString);
+                    memory_counter++;
+                    j++;
+                }
+            }
+            else if(lineVec[1]==".asciiz"){
+                int j=2;
+                while(j<lineVec.size()){
+                    int decimal;
+                    if(lineVec[j][0]=='\"'){
+                        for(int k=1;lineVec[j][k]!='\"';k++){
+                            decimal = (int)lineVec[j][k];
+                            stringstream ss;
+                            string hexString="";
+                            if((decimal) <16){
+                                hexString+= "0";
+                            }
+                            ss << hex << decimal;
+                            hexString += ss.str();
+                            memory.push_back(hexString);
+                            memory_counter++;
+                        }
+                    }
+                    j++;
+                }
+            }
+        }
+    }
         vector<string> lineVec;
 
         string seg = "";
