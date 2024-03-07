@@ -1,9 +1,9 @@
 #include<bits/stdc++.h>
 using namespace std;
 bool error=false;
-unordered_map<string,string>  mp={{"sp","x2"},{"gp","x3"},{"tp","x4"},{"ra","x1"}}
+unordered_map<string,string>  mp={{"sp","x2"},{"gp","x3"},{"tp","x4"},{"ra","x1"}};
+
 string opcode(string a){
-    // if(a=="add" || a=="sub" || a=="xor" || a=="mul" || a=="div" || a=="rem" || a=="srl" || a=="sll" || a=="slt" || a=="or" || a=="and" || a=="sra"){
     if(a=="R"){
         return "0110011";
     }
@@ -135,9 +135,9 @@ string immediate_U(string a){
     return "";
 }
 
-string U_format(string a,string operation,string rd,string imme){
+string U_format(string operation,string rd,string imm){
     string ans="0x";
-    ans+=immediate(imme);
+    ans+=immediate(imm);
     ans+=register_num(rd);
     ans+=opcode(operation);
     return ans;
@@ -175,31 +175,31 @@ string S_format(string operation,string rs2,string rs1,string imm){
     return ans;
 }
 
-string I_format(string operation,string rd,string rs1, string imme){
+string I_format(string operation,string rd,string rs1, string imm){
     string ans="0x";    
-    ans=immediate(imme);
+    ans=immediate(imm);
     ans+=register_num(rs1);
-    ans+=funct3(operation);
+    ans+=func3(operation);
     ans+=register_num(rd);
     ans+=opcode(operation);
     return ans;
 }
 
-string SB_format(string operation,string rd,string rs1, string rs2, string imm){
+string SB_format(string operation,string rs1, string rs2, string imm){
     string ans="0x";
     imm=immediate(imm);
     ans+=imm[0];            //12
     ans+=imm.substr(2,6);   //10:5
     ans+=register_num(rs2);
     ans+=register_num(rs1);
-    ans+=funct3(operation);
+    ans+=func3(operation);
     ans+=imm.substr(8,4);   //4:1
     ans+=imm[1];            //11
     ans+=opcode(operation);
     return ans;
 }
 
-string UJ_format(string operation,string rd,string rs1, string imm){
+string UJ_format(string operation,string rd,string imm){
     string ans="0x";
     imm=immediate(imm);
     ans+=imm[0];            //20
@@ -212,6 +212,72 @@ string UJ_format(string operation,string rd,string rs1, string imm){
 }
 
 int main(){
+    string ifilename;
+    string ofilename;
+
+    ifstream ifile(ifilename);
+    ofstream ofile(ofilename);
+
     
+    string line;
+    while (getline(ifile, line)) {
+
+        vector<string> lineVec;
+
+        string seg = "";
+        for(int i=0;i<line.size();i++){
+            if(line[i]==' ' || line[i]==',' || line[i]=='\t' || line[i] == '\n' || line[i] == '(' || line[i] == ')' || line[i]==EOF){
+                if(seg == "") continue;
+                lineVec.push_back(seg);
+                seg="";
+                continue;
+            }
+            seg+=line[i];
+        }
+
+        string operation = lineVec[0]; 
+        string rd;
+        string rs1;
+        string rs2;
+        string imm;
+
+        string ans;
+
+        if(operation=="add" || operation=="sub" || operation=="xor" || operation=="mul" || operation=="div" || operation=="rem" || operation=="srl" || operation=="sll" || operation=="slt" || operation=="or" || operation=="and" || operation=="sra"){
+            rd = lineVec[1];
+            rs1 = lineVec[2];
+            rs2 = lineVec[3];
+            ans = R_format(operation, rd, rs1, rs2);
+        } else if(operation=="addi" || operation=="andi" || operation=="ori" || operation=="lb" ||  operation=="ld" ||  operation=="lh" ||  operation=="lw" ||  operation=="jalr"){
+            rd = lineVec[1];
+            rs1 = lineVec[2];
+            rs2 = lineVec[3];
+            ans = I_format(operation, rd, rs1, imm);
+        } else if(operation=="sb" || operation=="sw" || operation=="sd" || operation=="sh"){
+            rs2 = lineVec[1];
+            imm = lineVec[2];
+            rs1 = lineVec[3];
+            ans = S_format(operation, rs2, rs1, imm);
+        } else if(operation=="beq" || operation=="bne" || operation=="bge" || operation=="blt"){
+            rs1 = lineVec[1];
+            rs2 = lineVec[2];
+            imm = lineVec[3];
+            ans = SB_format(operation, rs2, rs1, imm);
+        } else if(operation=="jal"){
+            rd = lineVec[1];
+            imm = lineVec[2];
+            ans = UJ_format(operation, rd, imm);
+        } else if(operation=="auipc" || operation=="lui"){
+            rd = lineVec[1];
+            imm = lineVec[2];
+            ans = U_format(operation, rd, imm);
+        }
+
+        ofile << ans << "\n";
+    }
+
+    ifile.close();
+    ofile.close();
+
     return 0;
 }
