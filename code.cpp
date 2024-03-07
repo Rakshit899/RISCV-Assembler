@@ -1,5 +1,7 @@
 #include<bits/stdc++.h>
 using namespace std;
+bool error=false;
+unordered_map<string,string>  mp={{"sp","x2"},{"gp","x3"},{"tp","x4"},{"ra","x1"}}
 string opcode(string a){
     // if(a=="add" || a=="sub" || a=="xor" || a=="mul" || a=="div" || a=="rem" || a=="srl" || a=="sll" || a=="slt" || a=="or" || a=="and" || a=="sra"){
     if(a=="R"){
