@@ -436,7 +436,13 @@ int main(){
             rs1 = lineVec[2];
             rs2 = lineVec[3];
             ans = R_format(operation, rd, rs1, rs2);
-        } else if(operation=="addi" || operation=="andi" || operation=="ori" || operation=="lb" ||  operation=="ld" ||  operation=="lh" ||  operation=="lw" ||  operation=="jalr"){
+        } else if(operation=="addi" || operation=="andi" || operation=="ori" ||  operation=="jalr"){
+            rd = lineVec[1];
+            rs1 = lineVec[2];
+            imm = lineVec[3];
+            ans = I_format(operation, rd, rs1, imm);
+        } 
+        else if(operation=="lb" ||  operation=="ld" ||  operation=="lh" ||  operation=="lw"){
             rd = lineVec[1];
             // rs1 = lineVec[2];
             int j=0,n1=lineVec[2].size();
@@ -451,10 +457,20 @@ int main(){
             }
             rs2 = lineVec[3];
             ans = I_format(operation, rd, rs1, imm);
-        } else if(operation=="sb" || operation=="sw" || operation=="sd" || operation=="sh"){
+        }
+        else if(operation=="sb" || operation=="sw" || operation=="sd" || operation=="sh"){
             rs2 = lineVec[1];
-            imm = lineVec[2];
-            rs1 = lineVec[3];
+            // rs1 = lineVec[2];
+            int j=0,n1=lineVec[2].size();
+            while(j<n1 && lineVec[2][j]>='0' && lineVec[2][j]<='9'){
+                imm+=lineVec[2][j];
+                j++;
+            }
+            j++;
+            while(j<n1 && lineVec[2][j]!=')'){
+                rs1+=lineVec[2][j];
+                j++;
+            }
             ans = S_format(operation, rs2, rs1, imm);
         } else if(operation=="beq" || operation=="bne" || operation=="bge" || operation=="blt"){
             rs1 = lineVec[1];
