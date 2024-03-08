@@ -28,6 +28,13 @@ unordered_map<string, string> mp= {
     {"s6", "x22"},
     {"s7", "x23"},
     {"s8", "x24"},
+    {"s9", "x25"},
+    {"s10", "x26"},
+    {"s11", "x27"},
+    {"t3", "x28"},
+    {"t4", "x29"},
+    {"t5", "x30"},
+    {"t6", "x31"},
 };
 
 string convert_to_hex(string a){
@@ -431,7 +438,17 @@ int main(){
             ans = R_format(operation, rd, rs1, rs2);
         } else if(operation=="addi" || operation=="andi" || operation=="ori" || operation=="lb" ||  operation=="ld" ||  operation=="lh" ||  operation=="lw" ||  operation=="jalr"){
             rd = lineVec[1];
-            rs1 = lineVec[2];
+            // rs1 = lineVec[2];
+            int j=0,n1=lineVec[2].size();
+            while(j<n1 && lineVec[2][j]>='0' && lineVec[2][j]<='9'){
+                imm+=lineVec[2][j];
+                j++;
+            }
+            j++;
+            while(j<n1 && lineVec[2][j]!=')'){
+                rs1+=lineVec[2][j];
+                j++;
+            }
             rs2 = lineVec[3];
             ans = I_format(operation, rd, rs1, imm);
         } else if(operation=="sb" || operation=="sw" || operation=="sd" || operation=="sh"){
@@ -455,7 +472,7 @@ int main(){
         }
 
         if(error){
-            cout<<"Error Occured!"<<endl;
+            ofile<<"Error Occured!"<<endl;
             break;
         }
 
