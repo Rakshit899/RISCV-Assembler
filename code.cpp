@@ -36,6 +36,9 @@ string convert_to_hex(string a){
     stringstream ss;
     ss << hex << x;
     string hexString = ss.str();
+    while(hexString.size() < 8){
+        hexString =  "0" + hexString;
+    }
     return hexString;
 }
 string opcode(string a){
@@ -302,159 +305,164 @@ string UJ_format(string operation,string rd,string imm){
 }
 
 int main(){
-    string ifilename;
-    string ofilename;
+    string ifilename = "test.asm";
+    string ofilename = "test.mc";
 
     ifstream ifile(ifilename);
     ofstream ofile(ofilename);
+
     map<string, int> label;
     int memory_counter=0;
     vector<string>memory;
+    
     string line;
+
     while (getline(ifile, line)) {
+        if(line.size() == 0) continue;
+        vector<string> lineVec;
+        string seg = "";
+        for(int i=0;i<line.size();i++){
+            if(line[i]==' ' || line[i]==',' || line[i]=='\t' || line[i] == '\n' || line[i]==':'){
+                if(seg!=""){
+                    lineVec.push_back(seg);
+                    seg="";
+                }
+                continue;
+            }
+            seg+=line[i];
+            if(i == line.size()-1) lineVec.push_back(seg);
+        }
         if(line==".data"){
-        while (getline(ifile, line)) {
-            if(line==".text")break;
-            vector<string> lineVec;
-            string seg = "";
-            for(int i=0;i<line.size();i++){
-                if(line[i]==' ' || line[i]==',' || line[i]=='\t' || line[i] == '\n' || line[i]==':' || line[i]==EOF){
-                    if(seg!=""){
-                        lineVec.push_back(seg);
-                        seg="";
-                    }
-                    continue;
-                }
-                seg+=line[i];
-            }
-            label[lineVec[0]]=memory_counter;
-            if(lineVec[1]==".word"){
-                int j=2;
-                while(j<lineVec.size()){
-                    int decimal;
-                    string temp= lineVec[j];
-                    if(lineVec[j][0]=='0' && lineVec[j][1]=='x'){
-                         decimal = stoi(lineVec[j].substr(2),0,16);
-                    }
-                    else{
-                        decimal= stoi(lineVec[j]);
-                    }
-                    stringstream ss;
-                    for(int i=0;i<4;i++){
-                        string hexString="";
-                        if((decimal%256)==0){
-                            hexString+= "00";
+            while (getline(ifile, line)) {
+                if(line==".text")break;
+                
+                label[lineVec[0]]=memory_counter;
+                if(lineVec[1]==".word"){
+                    int j=2;
+                    while(j<lineVec.size()){
+                        int decimal;
+                        string temp= lineVec[j];
+                        if(lineVec[j][0]=='0' && lineVec[j][1]=='x'){
+                            decimal = stoi(lineVec[j].substr(2),0,16);
                         }
-                        else if((decimal %256) <16){
-                            hexString+= "0";
+                        else{
+                            decimal= stoi(lineVec[j]);
                         }
-                        ss << hex << decimal%256;
-                        hexString += ss.str();
-                        memory.push_back(hexString);
-                        memory_counter++;
-                        decimal/=256;
-                    }
-                    j++;
-                }
-            }
-            else if(lineVec[1]==".byte"){
-                int j=2;
-                while(j<lineVec.size()){
-                    int decimal;
-                    string temp = lineVec[j];
-                    if(lineVec[j][0]=='0' && lineVec[j][1]=='x'){
-                         decimal = stoi(lineVec[j].substr(2),0,16);
-                    }
-                    else if(lineVec[j][0]=='\''){
-                        decimal = (int)lineVec[j][1];
-                    }
-                    else{
-                        decimal= stoi(lineVec[j]);
-                    }
-                    stringstream ss;
-                    string hexString="";
-                    if((decimal) <16){
-                        hexString+= "0";
-                    }
-                    ss << hex << decimal;
-                    hexString += ss.str();
-                    memory.push_back(hexString);
-                    memory_counter++;
-                    j++;
-                }
-            }
-            else if(lineVec[1]==".asciiz"){
-                int j=2;
-                while(j<lineVec.size()){
-                    int decimal;
-                    if(lineVec[j][0]=='\"'){
-                        for(int k=1;lineVec[j][k]!='\"';k++){
-                            decimal = (int)lineVec[j][k];
-                            stringstream ss;
+                        stringstream ss;
+                        for(int i=0;i<4;i++){
                             string hexString="";
-                            if((decimal) <16){
+                            if((decimal%256)==0){
+                                hexString+= "00";
+                            }
+                            else if((decimal %256) <16){
                                 hexString+= "0";
                             }
-                            ss << hex << decimal;
+                            ss << hex << decimal%256;
                             hexString += ss.str();
                             memory.push_back(hexString);
                             memory_counter++;
+                            decimal/=256;
                         }
+                        j++;
                     }
-                    j++;
+                }
+                else if(lineVec[1]==".byte"){
+                    int j=2;
+                    while(j<lineVec.size()){
+                        int decimal;
+                        string temp = lineVec[j];
+                        if(lineVec[j][0]=='0' && lineVec[j][1]=='x'){
+                            decimal = stoi(lineVec[j].substr(2),0,16);
+                        }
+                        else if(lineVec[j][0]=='\''){
+                            decimal = (int)lineVec[j][1];
+                        }
+                        else{
+                            decimal= stoi(lineVec[j]);
+                        }
+                        stringstream ss;
+                        string hexString="";
+                        if((decimal) <16){
+                            hexString+= "0";
+                        }
+                        ss << hex << decimal;
+                        hexString += ss.str();
+                        memory.push_back(hexString);
+                        memory_counter++;
+                        j++;
+                    }
+                }
+                else if(lineVec[1]==".asciiz"){
+                    int j=2;
+                    while(j<lineVec.size()){
+                        int decimal;
+                        if(lineVec[j][0]=='\"'){
+                            for(int k=1;lineVec[j][k]!='\"';k++){
+                                decimal = (int)lineVec[j][k];
+                                stringstream ss;
+                                string hexString="";
+                                if((decimal) <16){
+                                    hexString+= "0";
+                                }
+                                ss << hex << decimal;
+                                hexString += ss.str();
+                                memory.push_back(hexString);
+                                memory_counter++;
+                            }
+                        }
+                        j++;
+                    }
                 }
             }
-
-            string operation = lineVec[0]; 
-            string rd = "";
-            string rs1 = "";
-            string rs2 = "";
-            string imm = "";
-    
-            string ans = "";
-    
-            if(operation=="add" || operation=="sub" || operation=="xor" || operation=="mul" || operation=="div" || operation=="rem" || operation=="srl" || operation=="sll" || operation=="slt" || operation=="or" || operation=="and" || operation=="sra"){
-                rd = lineVec[1];
-                rs1 = lineVec[2];
-                rs2 = lineVec[3];
-                ans = R_format(operation, rd, rs1, rs2);
-            } else if(operation=="addi" || operation=="andi" || operation=="ori" || operation=="lb" ||  operation=="ld" ||  operation=="lh" ||  operation=="lw" ||  operation=="jalr"){
-                rd = lineVec[1];
-                rs1 = lineVec[2];
-                rs2 = lineVec[3];
-                ans = I_format(operation, rd, rs1, imm);
-            } else if(operation=="sb" || operation=="sw" || operation=="sd" || operation=="sh"){
-                rs2 = lineVec[1];
-                imm = lineVec[2];
-                rs1 = lineVec[3];
-                ans = S_format(operation, rs2, rs1, imm);
-            } else if(operation=="beq" || operation=="bne" || operation=="bge" || operation=="blt"){
-                rs1 = lineVec[1];
-                rs2 = lineVec[2];
-                imm = lineVec[3];
-                ans = SB_format(operation, rs2, rs1, imm);
-            } else if(operation=="jal"){
-                rd = lineVec[1];
-                imm = lineVec[2];
-                ans = UJ_format(operation, rd, imm);
-            } else if(operation=="auipc" || operation=="lui"){
-                rd = lineVec[1];
-                imm = lineVec[2];
-                ans = U_format(operation, rd, imm);
-            }
-
-            if(error){
-                cout<<"Error Occured!"<<endl;
-                break;
-            }
-    
-            ofile << pc << "\n";
-            ofile << ans << "\n";
-    
-            if(line.size())pc += 4;
-
-            
         }
+
+        string operation = lineVec[0]; 
+        string rd = "";
+        string rs1 = "";
+        string rs2 = "";
+        string imm = "";
+
+        string ans = "";
+
+        if(operation=="add" || operation=="sub" || operation=="xor" || operation=="mul" || operation=="div" || operation=="rem" || operation=="srl" || operation=="sll" || operation=="slt" || operation=="or" || operation=="and" || operation=="sra"){
+            rd = lineVec[1];
+            rs1 = lineVec[2];
+            rs2 = lineVec[3];
+            ans = R_format(operation, rd, rs1, rs2);
+        } else if(operation=="addi" || operation=="andi" || operation=="ori" || operation=="lb" ||  operation=="ld" ||  operation=="lh" ||  operation=="lw" ||  operation=="jalr"){
+            rd = lineVec[1];
+            rs1 = lineVec[2];
+            rs2 = lineVec[3];
+            ans = I_format(operation, rd, rs1, imm);
+        } else if(operation=="sb" || operation=="sw" || operation=="sd" || operation=="sh"){
+            rs2 = lineVec[1];
+            imm = lineVec[2];
+            rs1 = lineVec[3];
+            ans = S_format(operation, rs2, rs1, imm);
+        } else if(operation=="beq" || operation=="bne" || operation=="bge" || operation=="blt"){
+            rs1 = lineVec[1];
+            rs2 = lineVec[2];
+            imm = lineVec[3];
+            ans = SB_format(operation, rs2, rs1, imm);
+        } else if(operation=="jal"){
+            rd = lineVec[1];
+            imm = lineVec[2];
+            ans = UJ_format(operation, rd, imm);
+        } else if(operation=="auipc" || operation=="lui"){
+            rd = lineVec[1];
+            imm = lineVec[2];
+            ans = U_format(operation, rd, imm);
+        }
+
+        if(error){
+            cout<<"Error Occured!"<<endl;
+            break;
+        }
+
+        ofile << pc << "\n";
+        ofile << ans << "\n";
+
+        pc += 4;
     }
     ifile.close();
     ofile.close();
