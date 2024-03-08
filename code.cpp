@@ -2,6 +2,9 @@
 using namespace std;
 bool error=false;
 int pc = 0;
+map<string, int> label;
+int memory_counter=0;
+vector<string>memory;
 unordered_map<string, string> mp= {
     {"zero", "x0"},
     {"ra", "x1"},
@@ -342,31 +345,44 @@ int main(){
         if(line==".data"){
             while (getline(ifile, line)) {
                 if(line==".text")break;
-                
+                vector<string> lineVec;
+                string seg = "";
+                for(int i=0;i<line.size();i++){
+                    if(line[i]==' ' || line[i]==',' || line[i]=='\t' || line[i] == '\n' || line[i]==':'){
+                        if(seg!=""){
+                            lineVec.push_back(seg);
+                            seg="";
+                        }
+                        continue;
+                    }
+                    seg+=line[i];
+                    if(i == line.size()-1) lineVec.push_back(seg);
+                }
                 label[lineVec[0]]=memory_counter;
                 if(lineVec[1]==".word"){
                     int j=2;
                     while(j<lineVec.size()){
-                        int decimal;
+                        long long decimal;
                         string temp= lineVec[j];
                         if(lineVec[j][0]=='0' && lineVec[j][1]=='x'){
                             decimal = stoi(lineVec[j].substr(2),0,16);
                         }
                         else{
                             decimal= stoi(lineVec[j]);
-                        }
-                        stringstream ss;
-                        for(int i=0;i<4;i++){
-                            string hexString="";
-                            if((decimal%256)==0){
-                                hexString+= "00";
+                            if(decimal < 0){
+                                decimal= powl(2,32) + decimal;
                             }
-                            else if((decimal %256) <16){
+                        }
+                        for(int i=0;i<4;i++){
+                            stringstream ss;
+                            string hexString="";
+                            if((decimal %256) <16){
                                 hexString+= "0";
                             }
                             ss << hex << decimal%256;
                             hexString += ss.str();
                             memory.push_back(hexString);
+                            hexString="";
                             memory_counter++;
                             decimal/=256;
                         }
@@ -497,8 +513,12 @@ int main(){
 
         pc += 4;
     }
+    for(int i=0;i<memory.size();i++){
+        stringstream ss;
+        ss << hex << 268435456+i;
+        ofile << "0x" << ss.str() << " " << "0x" <<memory[i]<<"\n";
+    }
     ifile.close();
     ofile.close();
-
     return 0;
 }
