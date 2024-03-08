@@ -158,6 +158,9 @@ string func7(string a){
     return "";
 }
 string register_num(string a){
+    if(mp.count(a)>0){
+        a=mp[a];
+    }
     string reg_string;
     for(int i=1;i<a.size();i++){
         reg_string+= a[i];
@@ -201,6 +204,18 @@ string immediate_U(string a){
             ans+=('0' + imm%2);
             imm/=2;
         }
+        reverse(ans.begin(),ans.end());
+        return ans;
+    }
+    error=true;
+    return "";
+}
+string immediate_UJ(string a){
+    int imm= stoi(a);
+    if(imm>=-1048576 && imm<1048576){
+        string ans;
+        bitset<21> x(imm);
+        ans=x.to_string();
         reverse(ans.begin(),ans.end());
         return ans;
     }
@@ -299,7 +314,7 @@ string SB_format(string operation,string rs1, string rs2, string imm){
 
 string UJ_format(string operation,string rd,string imm){
     string ans="";
-    imm=immediate(imm);
+    imm=immediate_UJ(imm);
     ans+=imm[0];            //20
     ans+=imm.substr(10,10); //10:5
     ans+=imm[9];            //11
