@@ -444,18 +444,28 @@ int main(){
     ofstream ofile(ofilename);
 
     map<string, int> label;
+    map<string, int> label2;
     int memory_counter=0;
     vector<string>memory;
-    
+    vector<vector<string>>instructions;
     string line;
-
+    int flag=0;
+    ofile<<"Code Segment\n";
     while (getline(ifile, line)) {
         if(line.size() == 0) continue;
         vector<string> lineVec;
         string seg = "";
         for(int i=0;i<line.size();i++){
-            if(line[i]==' ' || line[i]==',' || line[i]=='\t' || line[i] == '\n' || line[i]==':'){
+            if(line[i]==' ' || line[i]==',' || line[i]=='\t' || line[i] == '\n'){
                 if(seg!=""){
+                    lineVec.push_back(seg);
+                    seg="";
+                }
+                continue;
+            }
+            else if(line[i]==':'){
+                if(seg!=""){
+                    seg+=':';
                     lineVec.push_back(seg);
                     seg="";
                 }
@@ -466,7 +476,10 @@ int main(){
         }
         if(line==".data"){
             while (getline(ifile, line)) {
-                if(line==".text")break;
+                if(line==".text"){
+                    flag=1;
+                    break;
+                }
                 vector<string> lineVec;
                 string seg = "";
                 for(int i=0;i<line.size();i++){
@@ -621,10 +634,49 @@ int main(){
                 else exit(0);
             }
         }
-        if(lineVec[0][0]=='#'){
+        if(flag==1){
+            flag=0;
             continue;
         }
-        string operation = lineVec[0]; 
+        int start=0;
+        for(int k=0;k<lineVec.size();k++){
+            if(lineVec[k][lineVec[k].size()-1]==':'){
+                for(int i=0;i<k;i++){
+                    if(label2.find(lineVec[i])==label2.end() && label.find(lineVec[i])==label.end()){
+                        label2[lineVec[i]]=pc;
+                    }
+                    else{
+                        ofile<<"Error\n";
+                        exit(0);
+                    }
+                }
+                if(lineVec[k].size()>1 && label2.find(lineVec[k].substr(0,lineVec[k].size()-1))==label2.end() && label.find(lineVec[k].substr(0,lineVec[k].size()-1))==label.end()){
+                    label2[lineVec[k].substr(0,lineVec[k].size()-1)]=pc;
+                }
+                else{
+                    ofile<<"Error\n";
+                    exit(0);
+                }
+                start=k+1;
+                break;
+            }
+        }
+        if(lineVec[0][start]=='#'){
+            continue;
+        }
+        if(start>= lineVec.size())continue;
+        vector<string>v;
+        for(int i=start;i<lineVec.size();i++){
+            v.push_back(lineVec[i]);
+        }
+        instructions.push_back(v);
+        if(flag==0){
+            pc += 4;
+        }
+        else flag=0;
+    }
+    for(int i=0;i<instructions.size();i++){
+        string operation = instructions[i][0]; 
         string rd = "";
         string rs1 = "";
         string rs2 = "";
@@ -633,58 +685,60 @@ int main(){
         string ans = "";
 
         if(operation=="add" || operation=="sub" || operation=="xor" || operation=="mul" || operation=="div" || operation=="rem" || operation=="srl" || operation=="sll" || operation=="slt" || operation=="or" || operation=="and" || operation=="sra"){
-            rd = lineVec[1];
-            rs1 = lineVec[2];
-            rs2 = lineVec[3];
+            rd = instructions[i][1];
+            rs1 = instructions[i][2];
+            rs2 = instructions[i][3];
             ans = R_format(operation, rd, rs1, rs2);
         } else if(operation=="addi" || operation=="andi" || operation=="ori" ||  operation=="jalr"){
-            rd = lineVec[1];
-            rs1 = lineVec[2];
-            imm = lineVec[3];
+            rd = instructions[i][1];
+            rs1 = instructions[i][2];
+            if(label2.find(instructions[i][3])!=label2.end()) instructions[i][3]= to_string(label2[instructions[i][3]]);
+            imm = instructions[i][3];
             ans = I_format(operation, rd, rs1, imm);
         } 
         else if(operation=="lb" ||  operation=="ld" ||  operation=="lh" ||  operation=="lw"){
-            rd = lineVec[1];
+            rd = instructions[i][1];
             // rs1 = lineVec[2];
-            int j=0,n1=lineVec[2].size();
-            while(j<n1 && lineVec[2][j]!='('){
-                imm+=lineVec[2][j];
+            int j=0,n1=instructions[i][2].size();
+            while(j<n1 && instructions[i][2][j]!='('){
+                imm+=instructions[i][2][j];
                 j++;
             }
             j++;
-            while(j<n1 && lineVec[2][j]!=')'){
-                rs1+=lineVec[2][j];
+            while(j<n1 && instructions[i][2][j]!=')'){
+                rs1+=instructions[i][2][j];
                 j++;
             }
-            rs2 = lineVec[3];
             ans = I_format(operation, rd, rs1, imm);
         }
         else if(operation=="sb" || operation=="sw" || operation=="sd" || operation=="sh"){
-            rs2 = lineVec[1];
+            rs2 = instructions[i][1];
             // rs1 = lineVec[2];
-            int j=0,n1=lineVec[2].size();
-            while(j<n1 && lineVec[2][j]!='('){
-                imm+=lineVec[2][j];
+            int j=0,n1=instructions[i][2].size();
+            while(j<n1 && instructions[i][2][j]!='('){
+                imm+=instructions[i][2][j];
                 j++;
             }
             j++;
-            while(j<n1 && lineVec[2][j]!=')'){
-                rs1+=lineVec[2][j];
+            while(j<n1 && instructions[i][2][j]!=')'){
+                rs1+=instructions[i][2][j];
                 j++;
             }
             ans = S_format(operation, rs2, rs1, imm);
         } else if(operation=="beq" || operation=="bne" || operation=="bge" || operation=="blt"){
-            rs1 = lineVec[1];
-            rs2 = lineVec[2];
-            imm = lineVec[3];
+            rs1 = instructions[i][1];
+            rs2 = instructions[i][2];
+            if(label2.find(instructions[i][3])!=label2.end()) instructions[i][3]= to_string(label2[instructions[i][3]]-i*4);
+            imm = instructions[i][3];
             ans = SB_format(operation, rs2, rs1, imm);
         } else if(operation=="jal"){
-            rd = lineVec[1];
-            imm = lineVec[2];
+            rd = instructions[i][1];
+            imm = instructions[i][2];
+            if(label2.find(instructions[i][2])!=label2.end()) instructions[i][2]= to_string(label2[instructions[i][2]]-i*4);
             ans = UJ_format(operation, rd, imm);
         } else if(operation=="auipc" || operation=="lui"){
-            rd = lineVec[1];
-            imm = lineVec[2];
+            rd = instructions[i][1];
+            imm = instructions[i][2];
             ans = U_format(operation, rd, imm);
         }
 
@@ -692,16 +746,20 @@ int main(){
             ofile<<"Error Occured!"<<endl;
             break;
         }
-
-        ofile << pc << "\n";
-        ofile << ans << "\n";
-
-        pc += 4;
+            stringstream ss;
+            ss << hex << i*4;
+            ofile << "0x"<<ss.str() << " ";
+            ofile << ans << "\n";
     }
+    ofile<< "Data Segment\n";
     for(int i=0;i<memory.size();i++){
         stringstream ss;
         ss << hex << 268435456+i;
         ofile << "0x" << ss.str() << " " << "0x" <<memory[i]<<"\n";
+    }
+    ofile<<"Labels\n";
+    for(auto it= label2.begin();it!=label2.end();it++){
+        ofile << it->first <<" " << it->second <<"\n";
     }
     ifile.close();
     ofile.close();
