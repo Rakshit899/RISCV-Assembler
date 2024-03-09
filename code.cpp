@@ -180,28 +180,36 @@ string register_num(string a){
 }
 string immediate(string a){
     int imm= stoi(a);
-    if(imm<0){
-        imm = 4096 +imm;
-    }
-    if(imm>=0 && imm<4096){
-        string ans;
-        for(int i=0;i<12;i++){
-            ans+=('0' + imm%2);
-            imm/=2;
-        }
-        reverse(ans.begin(),ans.end());
+    if(imm>=-4096 && imm<4096){
+        string ans="";
+        bitset<12> x(imm);
+        ans=x.to_string();
+        // reverse(ans.begin(),ans.end());
         return ans;
+        
     }
     error=true;
     return "";
 }
-
+string immediate_SB(string a){
+    int imm= stoi(a);
+    if(imm>=-4096*2 && imm<4096*2){
+        string ans="";
+        bitset<13> x(imm);
+        ans=x.to_string();
+        // reverse(ans.begin(),ans.end());
+        return ans;
+        
+    }
+    error=true;
+    return "";
+}
 string immediate_U(string a){
     int imm= stoi(a);
     if(imm>=0 && imm<1048576){
         string ans;
         for(int i=0;i<20;i++){
-            ans+=('0' + imm%2);
+            ans=(char)('0' + imm%2)+ans;
             imm/=2;
         }
         reverse(ans.begin(),ans.end());
@@ -216,7 +224,7 @@ string immediate_UJ(string a){
         string ans;
         bitset<21> x(imm);
         ans=x.to_string();
-        reverse(ans.begin(),ans.end());
+        // reverse(ans.begin(),ans.end());
         return ans;
     }
     error=true;
@@ -225,7 +233,9 @@ string immediate_UJ(string a){
 
 string U_format(string operation,string rd,string imm){
     string ans="";
-    ans+=immediate(imm);
+    imm=immediate_U(imm);
+    reverse(imm.begin(),imm.end());
+    ans+=imm;
     ans+=register_num(rd);
     ans+=opcode(operation);
     if(error){
@@ -261,9 +271,9 @@ string S_format(string operation,string rs2,string rs1,string imm){
     // I have considered sd as S format -> DOUBTFULL
     string ans="";
     imm=immediate(imm);
-    string imm1=imm.substr(5),imm2=imm.substr(0,5);
-    reverse(imm1.begin(),imm1.end());
-    reverse(imm2.begin(),imm2.end());
+    // reverse(imm.begin(),imm.end());
+    // 11,10,.. 0
+    string imm1=imm.substr(0,7),imm2=imm.substr(7);
     ans+=imm1;
     ans+=register_num(rs2);
     ans+=register_num(rs1);
@@ -284,7 +294,6 @@ string I_format(string operation,string rd,string rs1, string imm){
     ans+=register_num(rs1);
     ans+=func3(operation);
     ans+=register_num(rd);
-    ans+=opcode(operation);
     if(error){
         return "";
     }
@@ -293,9 +302,9 @@ string I_format(string operation,string rd,string rs1, string imm){
     return ans;
 }
 
-string SB_format(string operation,string rs1, string rs2, string imm){
+string SB_format(string operation,string rs2, string rs1, string imm){
     string ans="";
-    imm=immediate(imm);
+    imm=immediate_SB(imm);
     ans+=imm[0];            //12
     ans+=imm.substr(2,6);   //10:5
     ans+=register_num(rs2);
@@ -477,7 +486,7 @@ int main(){
             rd = lineVec[1];
             // rs1 = lineVec[2];
             int j=0,n1=lineVec[2].size();
-            while(j<n1 && lineVec[2][j]>='0' && lineVec[2][j]<='9'){
+            while(j<n1 && lineVec[2][j]!='('){
                 imm+=lineVec[2][j];
                 j++;
             }
@@ -493,7 +502,7 @@ int main(){
             rs2 = lineVec[1];
             // rs1 = lineVec[2];
             int j=0,n1=lineVec[2].size();
-            while(j<n1 && lineVec[2][j]>='0' && lineVec[2][j]<='9'){
+            while(j<n1 && lineVec[2][j]!='('){
                 imm+=lineVec[2][j];
                 j++;
             }
