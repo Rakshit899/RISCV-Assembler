@@ -338,6 +338,104 @@ string UJ_format(string operation,string rd,string imm){
     return ans;
 }
 
+bool check_hex(string s){
+    int flag=0;
+    for(int i=0;i<s.size();i++){
+        if(!((s[i]>='0' && s[i]<='9') || (s[i]>='A' && s[i]<='F') || (s[i]>='a' && s[i]<='f'))){
+            return false;
+        }
+        else if(flag==0 && s[i]!= '0'){
+            if(s.size()-i>8){
+                return false;
+            }
+            else{
+                flag=1;
+            }
+        }
+    }
+    return true;
+}
+
+bool check_decimal(string s){
+    if(s=="-")return false;
+    if(!((s[0]<='9' && s[0]>='0') || s[0]=='-')){
+        return false;
+    }
+    for(int i=1;i<s.size();i++){
+        if(!(s[i]<='9' && s[i]>='0')){
+            return false;
+        }
+    }
+    long long num=0;
+    int l=0;
+    if(s[0]=='-')l++;
+    int count=0;
+    for(int i=s.size()-1;i>=l;i--){
+        num+= (s[i]-'0')*powl(10,count);
+        if((l==0 && num>=powl(2,31)) || (l==1 && num>powl(2,31))){
+            return false;
+        }
+        count++;
+    }
+    return true;
+}
+
+bool check_hex_byte(string s){
+    int flag=0;
+    for(int i=0;i<s.size();i++){
+        if(!((s[i]>='0' && s[i]<='9') || (s[i]>='A' && s[i]<='F') || (s[i]>='a' && s[i]<='f'))){
+            return false;
+        }
+        else if(flag==0 && s[i]!= '0'){
+            if(s.size()-i>2){
+                return false;
+            }
+            else{
+                flag=1;
+            }
+        }
+    }
+    return true;
+}
+
+bool check_byte(string s){
+    if(s.size()!=3 || s[0]!='\'' || s[2]!='\''){
+        return false;
+    }
+    return true;
+}
+
+bool check_decimal_byte(string s){
+    if(s=="-")return false;
+    if(!((s[0]<='9' && s[0]>='0') || s[0]=='-')){
+        return false;
+    }
+    for(int i=1;i<s.size();i++){
+        if(!(s[i]<='9' && s[i]>='0')){
+            return false;
+        }
+    }
+    long long num=0;
+    int l=0;
+    if(s[0]=='-')l++;
+    int count=0;
+    for(int i=s.size()-1;i>=l;i--){
+        num+= (s[i]-'0')*powl(10,count);
+        if((l==0 && num>=powl(2,7)) || (l==1 && num>powl(2,7))){
+            return false;
+        }
+        count++;
+    }
+    return true;
+}
+
+bool check_asciiz(string s){
+    if(s[0]!= '\"' || s[s.size()-1]!= '\"'){
+        return false;
+    }
+    return true;
+}
+
 int main(){
     string ifilename = "test.asm";
     string ofilename = "test.mc";
@@ -389,10 +487,41 @@ int main(){
                         long long decimal;
                         string temp= lineVec[j];
                         if(lineVec[j][0]=='0' && lineVec[j][1]=='x'){
-                            decimal = stoi(lineVec[j].substr(2),0,16);
+                            if(!check_hex(lineVec[j].substr(2))){
+                                ofile<< "Error\n";
+                                exit(0);
+                            }
+                            int append_zero= 10 -lineVec[j].size();
+                            string temp;
+                            if(lineVec[j].size()>10){
+                                for(int k= lineVec[j].size()-8;k<lineVec[j].size();k++){
+                                    temp+= lineVec[j][k];
+                                }
+                            }
+                            else{
+                                for(int i=0;i<append_zero;i++){
+                                    temp+="0";
+                                }
+                                for(int i=2;i<lineVec[j].size();i++){
+                                    temp+= lineVec[j][i];
+                                }
+                            }
+                            memory.push_back(temp.substr(6,2));
+                            memory_counter++;
+                            memory.push_back(temp.substr(4,2));
+                            memory_counter++;
+                            memory.push_back(temp.substr(2,2));
+                            memory_counter++;
+                            memory.push_back(temp.substr(0,2));
+                            memory_counter++;
+                            j++;
+                            continue;
                         }
                         else{
-                            decimal= stoi(lineVec[j]);
+                            if(!(check_decimal(lineVec[j]))){
+                                exit(0);
+                            }
+                            decimal = stoi(lineVec[j]);
                             if(decimal < 0){
                                 decimal= powl(2,32) + decimal;
                             }
@@ -419,13 +548,40 @@ int main(){
                         int decimal;
                         string temp = lineVec[j];
                         if(lineVec[j][0]=='0' && lineVec[j][1]=='x'){
-                            decimal = stoi(lineVec[j].substr(2),0,16);
+                            if(!check_hex_byte(lineVec[j].substr(2))){
+                                ofile<< "Error\n";
+                                exit(0);
+                            }
+                            int append_zero= 4 -lineVec[j].size();
+                            string temp;
+                            if(lineVec[j].size()>4){
+                                for(int k= lineVec[j].size()-2;k<lineVec[j].size();k++){
+                                    temp+= lineVec[j][k];
+                                }
+                            }
+                            else{
+                                for(int i=0;i<append_zero;i++){
+                                    temp+="0";
+                                }
+                                for(int i=2;i<lineVec[j].size();i++){
+                                    temp+= lineVec[j][i];
+                                }
+                            }
+                            memory.push_back(temp.substr(0,2));
+                            memory_counter++;
+                            j++;
+                            continue;
                         }
                         else if(lineVec[j][0]=='\''){
+                            if(!check_byte(lineVec[j])) exit(0);
                             decimal = (int)lineVec[j][1];
                         }
                         else{
+                            if(!check_decimal_byte(lineVec[j])) exit(0);
                             decimal= stoi(lineVec[j]);
+                            if(decimal < 0){
+                                decimal= powl(2,8) + decimal;
+                            }
                         }
                         stringstream ss;
                         string hexString="";
@@ -441,6 +597,8 @@ int main(){
                 }
                 else if(lineVec[1]==".asciiz"){
                     int j=2;
+                    if(lineVec.size()>3)exit(0);
+                    if(!check_asciiz(lineVec[2]))exit(0);
                     while(j<lineVec.size()){
                         int decimal;
                         if(lineVec[j][0]=='\"'){
@@ -460,6 +618,7 @@ int main(){
                         j++;
                     }
                 }
+                else exit(0);
             }
         }
         if(lineVec[0][0]=='#'){
