@@ -462,7 +462,9 @@ int main(){
                 }
             }
         }
-
+        if(lineVec[0][0]=='#'){
+            continue;
+        }
         string operation = lineVec[0]; 
         string rd = "";
         string rs1 = "";
