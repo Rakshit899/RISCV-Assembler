@@ -436,6 +436,90 @@ bool check_asciiz(string s){
     return true;
 }
 
+bool check_hex_half(string s){
+    int flag=0;
+    for(int i=0;i<s.size();i++){
+        if(!((s[i]>='0' && s[i]<='9') || (s[i]>='A' && s[i]<='F') || (s[i]>='a' && s[i]<='f'))){
+            return false;
+        }
+        else if(flag==0 && s[i]!= '0'){
+            if(s.size()-i>4){
+                return false;
+            }
+            else{
+                flag=1;
+            }
+        }
+    }
+    return true;
+}
+
+bool check_decimal_half(string s){
+    if(s=="-")return false;
+    if(!((s[0]<='9' && s[0]>='0') || s[0]=='-')){
+        return false;
+    }
+    for(int i=1;i<s.size();i++){
+        if(!(s[i]<='9' && s[i]>='0')){
+            return false;
+        }
+    }
+    long long num=0;
+    int l=0;
+    if(s[0]=='-')l++;
+    int count=0;
+    for(int i=s.size()-1;i>=l;i--){
+        num+= (s[i]-'0')*powl(10,count);
+        if((l==0 && num>=powl(2,15)) || (l==1 && num>powl(2,15))){
+            return false;
+        }
+        count++;
+    }
+    return true;
+}
+
+bool check_hex_double(string s){
+    int flag=0;
+    for(int i=0;i<s.size();i++){
+        if(!((s[i]>='0' && s[i]<='9') || (s[i]>='A' && s[i]<='F') || (s[i]>='a' && s[i]<='f'))){
+            return false;
+        }
+        else if(flag==0 && s[i]!= '0'){
+            if(s.size()-i>16){
+                return false;
+            }
+            else{
+                flag=1;
+            }
+        }
+    }
+    return true;
+}
+
+bool check_decimal_double(string s){
+    if(s=="-")return false;
+    if(!((s[0]<='9' && s[0]>='0') || s[0]=='-')){
+        return false;
+    }
+    for(int i=1;i<s.size();i++){
+        if(!(s[i]<='9' && s[i]>='0')){
+            return false;
+        }
+    }
+    long long num=0;
+    int l=0;
+    if(s[0]=='-')l++;
+    int count=0;
+    for(int i=s.size()-1;i>=l;i--){
+        num+= (s[i]-'0')*powl(10,count);
+        if((l==0 && num>=powl(2,63)) || (l==1 && num>powl(2,63))){
+            return false;
+        }
+        count++;
+    }
+    return true;
+}
+
 int main(){
     string ifilename = "test.asm";
     string ofilename = "test.mc";
@@ -608,7 +692,7 @@ int main(){
                         j++;
                     }
                 }
-                else if(lineVec[1]==".asciiz"){
+                else if(lineVec[1]==".asciz"){
                     int j=2;
                     if(lineVec.size()>3)exit(0);
                     if(!check_asciiz(lineVec[2]))exit(0);
@@ -631,7 +715,132 @@ int main(){
                         j++;
                     }
                 }
-                else exit(0);
+                else if(lineVec[1]==".half"){
+                    int j=2;
+                    while(j<lineVec.size()){
+                        long long decimal;
+                        string temp= lineVec[j];
+                        if(lineVec[j][0]=='0' && lineVec[j][1]=='x'){
+                            if(!check_hex_half(lineVec[j].substr(2))){
+                                ofile<< "Error\n";
+                                exit(0);
+                            }
+                            int append_zero= 6 -lineVec[j].size();
+                            string temp;
+                            if(lineVec[j].size()>6){
+                                for(int k= lineVec[j].size()-4;k<lineVec[j].size();k++){
+                                    temp+= lineVec[j][k];
+                                }
+                            }
+                            else{
+                                for(int i=0;i<append_zero;i++){
+                                    temp+="0";
+                                }
+                                for(int i=2;i<lineVec[j].size();i++){
+                                    temp+= lineVec[j][i];
+                                }
+                            }
+                            memory.push_back(temp.substr(2,2));
+                            memory_counter++;
+                            memory.push_back(temp.substr(0,2));
+                            memory_counter++;
+                            j++;
+                            continue;
+                        }
+                        else{
+                            if(!(check_decimal_half(lineVec[j]))){
+                                exit(0);
+                            }
+                            decimal = stoi(lineVec[j]);
+                            if(decimal < 0){
+                                decimal= powl(2,16) + decimal;
+                            }
+                        }
+                        for(int i=0;i<2;i++){
+                            stringstream ss;
+                            string hexString="";
+                            if((decimal %256) <16){
+                                hexString+= "0";
+                            }
+                            ss << hex << decimal%256;
+                            hexString += ss.str();
+                            memory.push_back(hexString);
+                            hexString="";
+                            memory_counter++;
+                            decimal/=256;
+                        }
+                        j++;
+                    }
+                }
+                else if(lineVec[1]==".dword"){
+                    int j=2;
+                    while(j<lineVec.size()){
+                        long long decimal;
+                        string temp= lineVec[j];
+                        if(lineVec[j][0]=='0' && lineVec[j][1]=='x'){
+                            if(!check_hex_double(lineVec[j].substr(2))){
+                                ofile<< "Error\n";
+                                exit(0);
+                            }
+                            int append_zero= 18 -lineVec[j].size();
+                            string temp;
+                            if(lineVec[j].size()>18){
+                                for(int k= lineVec[j].size()-16;k<lineVec[j].size();k++){
+                                    temp+= lineVec[j][k];
+                                }
+                            }
+                            else{
+                                for(int i=0;i<append_zero;i++){
+                                    temp+="0";
+                                }
+                                for(int i=2;i<lineVec[j].size();i++){
+                                    temp+= lineVec[j][i];
+                                }
+                            }
+                            memory.push_back(temp.substr(14,2));
+                            memory_counter++;
+                            memory.push_back(temp.substr(12,2));
+                            memory_counter++;
+                            memory.push_back(temp.substr(10,2));
+                            memory_counter++;
+                            memory.push_back(temp.substr(8,2));
+                            memory_counter++;
+                            memory.push_back(temp.substr(6,2));
+                            memory_counter++;
+                            memory.push_back(temp.substr(4,2));
+                            memory_counter++;
+                            memory.push_back(temp.substr(2,2));
+                            memory_counter++;
+                            memory.push_back(temp.substr(0,2));
+                            memory_counter++;
+                            j++;
+                            continue;
+                        }
+                        else{
+                            if(!(check_decimal_double(lineVec[j]))){
+                                exit(0);
+                            }
+                            decimal = stoi(lineVec[j]);
+                            if(decimal < 0){
+                                decimal= powl(2,64) + decimal;
+                            }
+                        }
+                        for(int i=0;i<8;i++){
+                            stringstream ss;
+                            string hexString="";
+                            if((decimal %256) <16){
+                                hexString+= "0";
+                            }
+                            ss << hex << decimal%256;
+                            hexString += ss.str();
+                            memory.push_back(hexString);
+                            hexString="";
+                            memory_counter++;
+                            decimal/=256;
+                        }
+                        j++;
+                    }
+                }
             }
         }
         if(flag==1){
