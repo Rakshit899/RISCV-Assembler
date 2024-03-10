@@ -943,8 +943,8 @@ int main(){
             ans = SB_format(operation, rs2, rs1, imm);
         } else if(operation=="jal"){
             rd = instructions[i][1];
-            imm = instructions[i][2];
             if(label2.find(instructions[i][2])!=label2.end()) instructions[i][2]= to_string(label2[instructions[i][2]]-i*4);
+            imm = instructions[i][2];
             ans = UJ_format(operation, rd, imm);
         } else if(operation=="auipc" || operation=="lui"){
             rd = instructions[i][1];
