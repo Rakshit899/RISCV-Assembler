@@ -294,6 +294,7 @@ string I_format(string operation,string rd,string rs1, string imm){
     ans+=register_num(rs1);
     ans+=func3(operation);
     ans+=register_num(rd);
+    ans+=opcode(operation);
     if(error){
         return "";
     }
