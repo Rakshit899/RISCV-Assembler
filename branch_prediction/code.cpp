@@ -3,24 +3,35 @@ using namespace std;
 bool last_taken=false;
 bool two_bit_current=false, two_bit_prev=false;
 int num_single=0,num_double=0,num_all_taken=0,num_all_not=0;
-void single_bit(bool taken){
+map<int , string> single_bit_history, two_bit_history, taken_history, not_history;
+
+void single_bit(int pc,bool taken){
     if(taken==last_taken){
         num_single++;
     }
+    if(last_taken){
+        single_bit_history[pc]+="T";
+    }
+    else{
+        single_bit_history[pc]+="N";
+    }
     last_taken=taken;
+    
 }
-void always_taken(bool taken){
+void always_taken(int pc,bool taken){
     if(taken==true){
         num_all_taken++;
     }
+    taken_history[pc]+="T";
 }
-void always_not_taken(bool taken){
+void always_not_taken(int pc,bool taken){
     if(taken==false){
         num_all_not++;
     }
+    not_history[pc]+="N";
 }
 
-void two_bit( bool taken){
+void two_bit(int pc, bool taken){
     bool predict;
     if(two_bit_prev == two_bit_current ){
         predict = two_bit_prev;
@@ -34,6 +45,12 @@ void two_bit( bool taken){
         else{
             two_bit_prev= taken;
         }
+    }
+    if(predict){
+        two_bit_history[pc]+="T";
+    }
+    else{
+        two_bit_history[pc]+="N";
     }
     if(predict == taken) num_double++;
 }
@@ -96,11 +113,38 @@ int main(){
             choice.push_back(0);
         }
     }
-
-    for(auto x : choice){
-        cout << x << " ";
+    map<int,string> history;
+    int j=0;
+    for(int i=0;i<target.size();i++){
+        if(target[i]){
+            single_bit(pc[i],(bool)choice[i]);
+            two_bit(pc[i],(bool)choice[i]);
+            always_taken(pc[i],(bool)choice[i]);
+            always_not_taken(pc[i],(bool)choice[i]);
+            if(choice[i]){
+                history[pc[i]].push_back('T');
+            }
+            else{
+                history[pc[i]].push_back('N');
+            }
+        }
     }
-
+    for(auto it=history.begin();it!=history.end();it++){
+        cout<<it->first<<" "<<it->second<<endl;
+    }cout<<endl;
+    for(auto it=two_bit_history.begin();it!=two_bit_history.end();it++){
+        cout<<it->first<<" "<<it->second<<endl;
+    }cout<<endl;
+    for(auto it=single_bit_history.begin();it!=single_bit_history.end();it++){
+        cout<<it->first<<" "<<it->second<<endl;
+    }cout<<endl;
+    for(auto it=taken_history.begin();it!=taken_history.end();it++){
+        cout<<it->first<<" "<<it->second<<endl;
+    }cout<<endl;
+    for(auto it=not_history.begin();it!=not_history.end();it++){
+        cout<<it->first<<" "<<it->second<<endl;
+    }
+    
     ifile1.close();
     ifile2.close();
 
