@@ -1,6 +1,7 @@
 #include<bits/stdc++.h>
 using namespace std;
 bool last_taken=false;
+string two="";
 bool two_bit_current=false, two_bit_prev=false;
 int num_single=0,num_double=0,num_all_taken=0,num_all_not=0;
 map<int , string> single_bit_history, two_bit_history, taken_history, not_history;
@@ -32,6 +33,7 @@ void always_not_taken(int pc,bool taken){
 }
 
 void two_bit(int pc, bool taken){
+    
     bool predict;
     if(two_bit_prev == two_bit_current ){
         predict = two_bit_prev;
@@ -48,8 +50,10 @@ void two_bit(int pc, bool taken){
     }
     if(predict){
         two_bit_history[pc]+="T";
+        two+="T";
     }
     else{
+        two+="N";
         two_bit_history[pc]+="N";
     }
     if(predict == taken) num_double++;
@@ -115,6 +119,8 @@ int main(){
     }
     map<int,string> history;
     int j=0;
+    int branch=0;
+    string abc="";
     for(int i=0;i<target.size();i++){
         if(target[i]){
             single_bit(pc[i],(bool)choice[i]);
@@ -123,12 +129,17 @@ int main(){
             always_not_taken(pc[i],(bool)choice[i]);
             if(choice[i]){
                 history[pc[i]].push_back('T');
+                abc+='T';
             }
             else{
                 history[pc[i]].push_back('N');
+                abc+='N';
             }
+            branch++;
         }
     }
+    cout<<"overall history "<<abc<<endl;
+    cout<<"Two "<<two<<endl;
     for(auto it=history.begin();it!=history.end();it++){
         cout<<it->first<<" "<<it->second<<endl;
     }cout<<endl;
@@ -144,8 +155,11 @@ int main(){
     for(auto it=not_history.begin();it!=not_history.end();it++){
         cout<<it->first<<" "<<it->second<<endl;
     }
-    
+    cout<<"Accuracy of single bit branch predictor: "<<((float)num_single/branch)*100<<endl;
+    cout<<"Accuracy of two bit branch predictor: "<<((float)num_double/branch)*100<<endl;
+    cout<<"Accuracy of always not taken bit branch predictor: "<<((float)num_all_not/branch)*100<<endl;
+    cout<<"Accuracy of always taken bit branch predictor: "<<((float)num_all_taken/branch)*100<<endl;
     ifile1.close();
     ifile2.close();
-
+    cout<<"x";
 }
