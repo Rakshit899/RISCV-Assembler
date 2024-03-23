@@ -128,11 +128,13 @@ int main(){
         }
     }
     map<int,string> history;
+    map<int,int> target_;
     int j=0;
     int branch=0;
     string abc="";
     for(int i=0;i<target.size();i++){
         if(target[i]){
+            target_[pc[i]]=target[i];
             single_bit(pc[i],(bool)choice[i]);
             two_bit(pc[i],(bool)choice[i]);
             always_taken(pc[i],(bool)choice[i]);
