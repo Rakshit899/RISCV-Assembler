@@ -83,10 +83,11 @@ int main(){
     string line2;
 
     vector<int> target;
-
+    int index=0;
     while (getline(ifile2, line2)) {
         if(line2.size() == 0) continue;
         string opcode = line2.substr(32-7, 7);
+        // branch
         if(opcode == "1100011"){
             string imm(13, '0');
             imm[12-12] = line2[31-31];
@@ -103,9 +104,19 @@ int main(){
             }
             target.push_back(value);
 
-        } else {
+        }
+        // jal
+        else if(opcode=="1101111"){
+            target.push_back(pc[index+1]);
+        } 
+        // jalr
+        else if(opcode=="1100111"){
+            target.push_back(pc[index+1]);
+        }
+        else {
             target.push_back(0);
         }
+        index++;
     }
 
     vector<bool> choice;
