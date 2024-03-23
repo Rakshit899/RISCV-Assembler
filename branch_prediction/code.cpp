@@ -4,9 +4,18 @@ bool last_taken=false;
 string two="";
 bool two_bit_current=false, two_bit_prev=false;
 int num_single=0,num_double=0,num_all_taken=0,num_all_not=0;
-map<int , string> single_bit_history, two_bit_history, taken_history, not_history;
-
+map<int , string> single_bit_history, taken_history, not_history, two_bit_history;
+map<int,pair<bool,bool>>two_bit_state;
 void single_bit(int pc,bool taken){
+    if(single_bit_history[pc].size()==0){
+        last_taken= false;
+    }
+    else if(single_bit_history[pc][single_bit_history[pc].size()-1]=='T'){
+        last_taken=true;
+    }
+    else{
+        last_taken= false;
+    }
     if(taken==last_taken){
         num_single++;
     }
@@ -33,19 +42,21 @@ void always_not_taken(int pc,bool taken){
 }
 
 void two_bit(int pc, bool taken){
-    
+    if(two_bit_history[pc].size()==0){
+        two_bit_state[pc]={false, false};
+    }
     bool predict;
-    if(two_bit_prev == two_bit_current ){
-        predict = two_bit_prev;
-        two_bit_prev=taken;
+    if(two_bit_state[pc].first == two_bit_state[pc].second ){
+        predict = two_bit_state[pc].first;
+        two_bit_state[pc].first=taken;
     }
     else{
-        predict = two_bit_current;
-        if(taken == two_bit_prev){
-            two_bit_current= taken;
+        predict = two_bit_state[pc].second;
+        if(taken == two_bit_state[pc].first){
+            two_bit_state[pc].second= taken;
         }
         else{
-            two_bit_prev= taken;
+            two_bit_state[pc].first= taken;
         }
     }
     if(predict){
@@ -59,44 +70,121 @@ void two_bit(int pc, bool taken){
     if(predict == taken) num_double++;
 }
 
+string HexToBin(string hexdec)
+{
+      //Skips "0x" if present at beggining of Hex string
+    size_t i = (hexdec[1] == 'x' || hexdec[1] == 'X')? 2 : 0;
+    string bin="";
+    while (hexdec[i]) {
+ 
+        switch (hexdec[i]) {
+        case '0':
+            bin+= "0000";
+            break;
+        case '1':
+            bin+= "0001";
+            break;
+        case '2':
+            bin+= "0010";
+            break;
+        case '3':
+            bin+= "0011";
+            break;
+        case '4':
+            bin+= "0100";
+            break;
+        case '5':
+            bin+= "0101";
+            break;
+        case '6':
+            bin+= "0110";
+            break;
+        case '7':
+            bin+= "0111";
+            break;
+        case '8':
+            bin+= "1000";
+            break;
+        case '9':
+            bin+= "1001";
+            break;
+        case 'A':
+        case 'a':
+            bin+= "1010";
+            break;
+        case 'B':
+        case 'b':
+            bin+= "1011";
+            break;
+        case 'C':
+        case 'c':
+            bin+= "1100";
+            break;
+        case 'D':
+        case 'd':
+            bin+= "1101";
+            break;
+        case 'E':
+        case 'e':
+            bin+= "1110";
+            break;
+        case 'F':
+        case 'f':
+            bin+= "1111";
+            break;
+        case '.':
+            bin+= ".";
+            break;
+        default:
+            cout << "\nInvalid hexadecimal digit "
+                 << hexdec[i];
+        }
+        i++;
+    }
+    return bin;
+}
+
 int main(){
-    string ifilename1 = "actual_pc.txt";
-    string ifilename2 = "machine_code.txt";
-
-    ifstream ifile1(ifilename1);
-    ifstream ifile2(ifilename2);
-
-    if (!ifile1.is_open() || !ifile2.is_open()) {
+    string ifilename = "input.txt";
+    ifstream ifile(ifilename1);
+    if (!ifile.is_open()) {
         cout << "Error opening files." << endl;
         return 1;
     }
 
     vector<int> pc;
-
-    string line1;
-    while (getline(ifile1, line1)) {
-        if(line1.size() == 0) continue;
-        int value = stoi(line1, nullptr, 2);
-        pc.push_back(value);
-    }
-
-    string line2;
-
+    string line;
     vector<int> target;
-    
-    while (getline(ifile2, line2)) {
-        if(line2.size() == 0) continue;
-        string opcode = line2.substr(32-7, 7);
+    while (getline(ifile, line)) {
+        if(line.size() == 0) continue;
+        vector<string> lineVec;
+        string seg = "";
+        for(int i=0;i<line.size();i++){
+            if(line[i]==' '){
+                if(seg!=""){
+                    lineVec.push_back(seg);
+                    seg="";
+                }
+                continue;
+            }
+            seg+=line[i];
+            if(i == line.size()-1) lineVec.push_back(seg);
+        }
+        string pc_temp= HexToBin(lineVec[2]);
+        int value = stoi(pc_temp, nullptr, 2);
+        pc.push_back(value);
+        string inst= HexToBin(lineVec[3].substr(1,10));
+        string opcode = inst.substr(32-7, 7);
         // branch
         if(opcode == "1100011"){
             string imm(13, '0');
-            imm[12-12] = line2[31-31];
-            imm[12-11] = line2[31-7];
+            imm[12-12] = inst[31-31];
+            imm[12-11] = inst[31-7];
             for(int i = 31-25, j = 12-5; i >= 31-30, j >= 12-10; i--, j--){
-                imm[j] = line2[i];
+                imm[j] = inst[i];
             }
             for(int i = 31-8, j = 12-1; i >= 31-11, j >= 12-4; i--, j--){
-                imm[j] = line2[i];
+                imm[j] = inst[i];
             }
             int value = stoi(imm, nullptr, 2);
             if(imm[0]=='1'){
