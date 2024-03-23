@@ -83,7 +83,7 @@ int main(){
     string line2;
 
     vector<int> target;
-    int index=0;
+    
     while (getline(ifile2, line2)) {
         if(line2.size() == 0) continue;
         string opcode = line2.substr(32-7, 7);
@@ -107,16 +107,15 @@ int main(){
         }
         // jal
         else if(opcode=="1101111"){
-            target.push_back(pc[index+1]);
+            target.push_back(pc[target.size()]);
         } 
         // jalr
         else if(opcode=="1100111"){
-            target.push_back(pc[index+1]);
+            target.push_back(pc[target.size()]);
         }
         else {
             target.push_back(0);
         }
-        index++;
     }
 
     vector<bool> choice;
@@ -172,5 +171,4 @@ int main(){
     cout<<"Accuracy of always taken bit branch predictor: "<<((float)num_all_taken/branch)*100<<endl;
     ifile1.close();
     ifile2.close();
-    cout<<"x";
 }
