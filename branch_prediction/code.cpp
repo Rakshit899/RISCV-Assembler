@@ -2,7 +2,8 @@
 using namespace std;
 bool last_taken=false;
 string two="";
-int ccc=0;
+// int ccc=0;
+// long int cc=0;
 bool two_bit_current=false, two_bit_prev=false;
 int num_single=0,num_double=0,num_all_taken=0,num_all_not=0;
 map<int , string> single_bit_history, taken_history, not_history, two_bit_history;
@@ -74,7 +75,7 @@ void two_bit(int pc, bool taken){
 
 string HexToBin(string hexdec)
 {
-    ccc++;
+    // ccc++;
       //Skips "0x" if present at beggining of Hex string
     size_t i = (hexdec[1] == 'x' || hexdec[1] == 'X')? 2 : 0;
     string bin="";
@@ -139,7 +140,8 @@ string HexToBin(string hexdec)
             bin+= ".";
             break;
         default:
-            cout<<hexdec<<" "<<ccc<<endl;
+            // cout<<hexdec<<" "<<ccc<<endl;
+            // cout<<"line "<<cc<<endl;
             cout << "\nInvalid hexadecimal digit "
                  << hexdec[i];
         }
@@ -160,7 +162,9 @@ int main(){
     vector<int> pc;
     string line;
     vector<int> target;
+    
     while (getline(ifile, line)) {
+        // cc++;
         if(line.size() == 0) continue;
         vector<string> lineVec;
         string seg = "";
@@ -174,6 +178,9 @@ int main(){
             }
             seg+=line[i];
             if(i == line.size()-1) lineVec.push_back(seg);
+        }
+        if(lineVec.size()<4 || lineVec[2].substr(0,2)!="0x" || lineVec[3].substr(0,3)!="(0x"){
+            continue;
         }
         string pc_temp= HexToBin(lineVec[2]);
         long int value = stoll(pc_temp, nullptr, 2);
