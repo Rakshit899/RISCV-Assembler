@@ -2,6 +2,7 @@
 using namespace std;
 bool last_taken=false;
 string two="";
+int ccc=0;
 bool two_bit_current=false, two_bit_prev=false;
 int num_single=0,num_double=0,num_all_taken=0,num_all_not=0;
 map<int , string> single_bit_history, taken_history, not_history, two_bit_history;
@@ -73,6 +74,7 @@ void two_bit(int pc, bool taken){
 
 string HexToBin(string hexdec)
 {
+    ccc++;
       //Skips "0x" if present at beggining of Hex string
     size_t i = (hexdec[1] == 'x' || hexdec[1] == 'X')? 2 : 0;
     string bin="";
@@ -137,6 +139,7 @@ string HexToBin(string hexdec)
             bin+= ".";
             break;
         default:
+            cout<<hexdec<<" "<<ccc<<endl;
             cout << "\nInvalid hexadecimal digit "
                  << hexdec[i];
         }
@@ -148,6 +151,7 @@ string HexToBin(string hexdec)
 int main(){
     string ifilename = "input.txt";
     ifstream ifile(ifilename);
+    // ifstream ifile2(filename2);
     if (!ifile.is_open()) {
         cout << "Error opening files." << endl;
         return 1;
