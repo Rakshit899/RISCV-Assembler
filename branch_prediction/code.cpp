@@ -6,11 +6,12 @@ bool two_bit_current=false, two_bit_prev=false;
 int num_single=0,num_double=0,num_all_taken=0,num_all_not=0;
 map<int , string> single_bit_history, taken_history, not_history, two_bit_history;
 map<int,pair<bool,bool>>two_bit_state;
+map<int,string> history;
 void single_bit(int pc,bool taken){
     if(single_bit_history[pc].size()==0){
         last_taken= false;
     }
-    else if(single_bit_history[pc][single_bit_history[pc].size()-1]=='T'){
+    else if(history[pc][history[pc].size()-1]=='T'){
         last_taken=true;
     }
     else{
@@ -215,7 +216,6 @@ int main(){
             choice.push_back(0);
         }
     }
-    map<int,string> history;
     map<int,int> target_;
     int j=0;
     int branch=0;
