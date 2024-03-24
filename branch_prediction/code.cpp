@@ -146,7 +146,7 @@ string HexToBin(string hexdec)
 
 int main(){
     string ifilename = "input.txt";
-    ifstream ifile(ifilename1);
+    ifstream ifile(ifilename);
     if (!ifile.is_open()) {
         cout << "Error opening files." << endl;
         return 1;
@@ -259,6 +259,5 @@ int main(){
     cout<<"Accuracy of two bit branch predictor: "<<((float)num_double/branch)*100<<endl;
     cout<<"Accuracy of always not taken bit branch predictor: "<<((float)num_all_not/branch)*100<<endl;
     cout<<"Accuracy of always taken bit branch predictor: "<<((float)num_all_taken/branch)*100<<endl;
-    ifile1.close();
-    ifile2.close();
+    ifile.close();
 }
