@@ -171,7 +171,7 @@ int main(){
             if(i == line.size()-1) lineVec.push_back(seg);
         }
         string pc_temp= HexToBin(lineVec[2]);
-        int value = stoi(pc_temp, nullptr, 2);
+        long int value = stoll(pc_temp, nullptr, 2);
         pc.push_back(value);
         string inst= HexToBin(lineVec[3].substr(1,10));
         string opcode = inst.substr(32-7, 7);
