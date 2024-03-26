@@ -148,11 +148,28 @@ string HexToBin(string hexdec)
     }
     return bin;
 }
+string get_arg(int argc, char *argv[], string arg_name) {
+    for (int i = 1; i < argc; i++) {
+        string arg_i = argv[i];
+        if (arg_i == arg_name && i + 1 < argc) {
+            string arg = argv[i + 1];
+            return arg;
+        }
+    }
+    return "";
+}
 
-int main(){
-    string ifilename = "input.txt";
+int main(int argc, char *argv[]) {
+    string trace_name = "Fac_test_Lab";
+
+    string arg;
+    int temp;
+
+    arg = get_arg(argc, argv, "-f");
+    if (arg != "") trace_name = arg;
+
+    string ifilename = "RISCV_Traces_Lab/" + trace_name + ".txt";
     ifstream ifile(ifilename);
-    // ifstream ifile2(filename2);
     if (!ifile.is_open()) {
         cout << "Error opening files." << endl;
         return 1;
