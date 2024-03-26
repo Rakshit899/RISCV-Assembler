@@ -5,11 +5,11 @@ string two="";
 // int ccc=0;
 // long int cc=0;
 bool two_bit_current=false, two_bit_prev=false;
-int num_single=0,num_double=0,num_all_taken=0,num_all_not=0;
-map<int , string> single_bit_history, taken_history, not_history, two_bit_history;
-map<int,pair<bool,bool>>two_bit_state;
-map<int,string> history;
-void single_bit(int pc,bool taken){
+long long int num_single=0,num_double=0,num_all_taken=0,num_all_not=0;
+map<long long int , string> single_bit_history, taken_history, not_history, two_bit_history;
+map<long long int,pair<bool,bool>>two_bit_state;
+map<long long int,string> history;
+void single_bit(long long int pc,bool taken){
     if(single_bit_history[pc].size()==0){
         last_taken= false;
     }
@@ -31,20 +31,20 @@ void single_bit(int pc,bool taken){
     last_taken=taken;
     
 }
-void always_taken(int pc,bool taken){
+void always_taken(long long int pc,bool taken){
     if(taken==true){
         num_all_taken++;
     }
     taken_history[pc]+="T";
 }
-void always_not_taken(int pc,bool taken){
+void always_not_taken(long long int pc,bool taken){
     if(taken==false){
         num_all_not++;
     }
     not_history[pc]+="N";
 }
 
-void two_bit(int pc, bool taken){
+void two_bit(long long int pc, bool taken){
     if(two_bit_history[pc].size()==0){
         two_bit_state[pc]={false, false};
     }
@@ -158,9 +158,9 @@ int main(){
         return 1;
     }
     bool t=false;
-    vector<int> pc;
+    vector<long long int> pc;
     string line;
-    vector<int> target;
+    vector<long long int> target;
     
     while (getline(ifile, line)) {
         // cc++;
@@ -182,7 +182,10 @@ int main(){
             continue;
         }
         string pc_temp= HexToBin(lineVec[2]);
-        long int value = stoll(pc_temp, nullptr, 2);
+        long long int value = 0;
+        for(int i=0;i<32;i++){
+            value+= (pc_temp[i]-'0')*powl(2,31-i);
+        }
         pc.push_back(value);
         if(t){
             target.push_back(pc[target.size()+1]-pc[target.size()]);
@@ -201,7 +204,7 @@ int main(){
             for(int i = 31-8, j = 12-1; i >= 31-11, j >= 12-4; i--, j--){
                 imm[j] = inst[i];
             }
-            int value = stoi(imm, nullptr, 2);
+            long long int value = stoi(imm, nullptr, 2);
             if(imm[0]=='1'){
                 value= value - pow(2,13);
             }
@@ -232,11 +235,11 @@ int main(){
             choice.push_back(0);
         }
     }
-    map<int,int> target_;
-    int j=0;
-    int branch=0;
+    map<long long int,long long int> target_;
+    long long int j=0;
+    long long int branch=0;
     string abc="";
-    for(int i=0;i<target.size();i++){
+    for(long long int i=0;i<target.size();i++){
         if(target[i]){
             target_[pc[i]]=target[i];
             single_bit(pc[i],(bool)choice[i]);
