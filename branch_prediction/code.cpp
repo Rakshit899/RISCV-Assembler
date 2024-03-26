@@ -160,7 +160,7 @@ string get_arg(int argc, char *argv[], string arg_name) {
 }
 
 int main(int argc, char *argv[]) {
-    string trace_name = "Fac_test_Lab";
+    string trace_name = "Fac_test_Lab.txt";     //default
 
     string arg;
     int temp;
@@ -168,7 +168,7 @@ int main(int argc, char *argv[]) {
     arg = get_arg(argc, argv, "-f");
     if (arg != "") trace_name = arg;
 
-    string ifilename = "RISCV_Traces_Lab/" + trace_name + ".txt";
+    string ifilename = "RISCV_Traces_Lab/" + trace_name;
     ifstream ifile(ifilename);
     if (!ifile.is_open()) {
         cout << "Error opening files." << endl;
