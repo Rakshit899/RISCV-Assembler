@@ -158,7 +158,7 @@ int main(){
         cout << "Error opening files." << endl;
         return 1;
     }
-
+    bool t=false;
     vector<int> pc;
     string line;
     vector<int> target;
@@ -185,6 +185,10 @@ int main(){
         string pc_temp= HexToBin(lineVec[2]);
         long int value = stoll(pc_temp, nullptr, 2);
         pc.push_back(value);
+        if(t){
+            target.push_back(pc[target.size()+1]-pc[target.size()]);
+            t=false;
+        }
         string inst= HexToBin(lineVec[3].substr(1,10));
         string opcode = inst.substr(32-7, 7);
         // branch
@@ -207,17 +211,19 @@ int main(){
         }
         // jal
         else if(opcode=="1101111"){
-            target.push_back(pc[target.size()]);
+            // cout<<"JAL"<<" "<<pc[target.size()]<<endl;
+            // target.push_back(pc[target.size()]);
+            t=true;
         } 
         // jalr
         else if(opcode=="1100111"){
-            target.push_back(pc[target.size()]);
+            // target.push_back(pc[target.size()]);
+            t=true;
         }
         else {
             target.push_back(0);
         }
     }
-
     vector<bool> choice;
 
     for(int i = 0; i < pc.size()-1; i++){
@@ -249,22 +255,26 @@ int main(){
             branch++;
         }
     }
-    cout<<"overall history "<<abc<<endl;
-    cout<<"Two "<<two<<endl;
+    cout<<"overall history"<<endl<<abc<<endl;
+    cout<<"Branch wise history"<<endl;
     for(auto it=history.begin();it!=history.end();it++){
-        cout<<it->first<<" "<<it->second<<endl;
+        cout<<"PC= "<<it->first<<" History= "<<it->second<<endl;
     }cout<<endl;
+    cout<<"Two Bit predictor"<<two<<endl;
     for(auto it=two_bit_history.begin();it!=two_bit_history.end();it++){
-        cout<<it->first<<" "<<it->second<<endl;
+        cout<<"PC= "<<it->first<<" Prediction History= "<<it->second<<endl;
     }cout<<endl;
+    cout<<"One Bit predictor"<<two<<endl;
     for(auto it=single_bit_history.begin();it!=single_bit_history.end();it++){
-        cout<<it->first<<" "<<it->second<<endl;
+        cout<<"PC= "<<it->first<<" Prediction History= "<<it->second<<endl;
     }cout<<endl;
+    cout<<"Always taken predictor"<<two<<endl;
     for(auto it=taken_history.begin();it!=taken_history.end();it++){
-        cout<<it->first<<" "<<it->second<<endl;
+        cout<<"PC= "<<it->first<<" Prediction History= "<<it->second<<endl;
     }cout<<endl;
+    cout<<"Always not taken predictor"<<two<<endl;
     for(auto it=not_history.begin();it!=not_history.end();it++){
-        cout<<it->first<<" "<<it->second<<endl;
+        cout<<"PC= "<<it->first<<" Prediction History= "<<it->second<<endl;
     }
     cout<<"Accuracy of single bit branch predictor: "<<((float)num_single/branch)*100<<endl;
     cout<<"Accuracy of two bit branch predictor: "<<((float)num_double/branch)*100<<endl;
