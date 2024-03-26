@@ -178,10 +178,19 @@ int main(){
             seg+=line[i];
             if(i == line.size()-1) lineVec.push_back(seg);
         }
-        if(lineVec.size()<4 || lineVec[2].substr(0,2)!="0x" || lineVec[3].substr(0,3)!="(0x"){
+        int flag=0;
+        int k=0;
+        while(k<lineVec.size()){
+            if(lineVec[k]=="core"){
+                break;
+            }
+            k++;
+        }
+        if(k==lineVec.size()) continue;
+        if(lineVec.size()<4+k || lineVec[2+k].substr(0,2)!="0x" || lineVec[3+k].substr(0,3)!="(0x"){
             continue;
         }
-        string pc_temp= HexToBin(lineVec[2]);
+        string pc_temp= HexToBin(lineVec[2+k]);
         long long int value = 0;
         for(int i=0;i<32;i++){
             value+= (pc_temp[i]-'0')*powl(2,31-i);
@@ -191,7 +200,7 @@ int main(){
             target.push_back(pc[target.size()+1]-pc[target.size()]);
             t=false;
         }
-        string inst= HexToBin(lineVec[3].substr(1,10));
+        string inst= HexToBin(lineVec[3+k].substr(1,10));
         string opcode = inst.substr(32-7, 7);
         // branch
         if(opcode == "1100011"){
