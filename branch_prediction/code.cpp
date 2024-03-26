@@ -142,8 +142,7 @@ string HexToBin(string hexdec)
         default:
             // cout<<hexdec<<" "<<ccc<<endl;
             // cout<<"line "<<cc<<endl;
-            cout << "\nInvalid hexadecimal digit "
-                 << hexdec[i];
+            cout << "\nInvalid hexadecimal digit "<<endl;
         }
         i++;
     }
